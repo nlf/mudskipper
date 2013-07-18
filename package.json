@@ -1,0 +1,24 @@
+{
+  "name": "hapi-resourceful",
+  "version": "0.0.1",
+  "description": "a resourceful routing plugin for hapi",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nlf/hapi-resourceful.git"
+  },
+  "keywords": [
+    "hapi",
+    "resourceful",
+    "rest",
+    "plugin"
+  ],
+  "author": "Nathan LaFreniere <quitlahok@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nlf/hapi-resourceful/issues"
+  }
+}
