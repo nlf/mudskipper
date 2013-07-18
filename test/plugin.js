@@ -87,6 +87,7 @@ describe('hapi-resourceful', function () {
         expect(testcreate).to.equal(true);
         expect(deeptestindex).to.equal(true);
         expect(deeptestcreate).to.equal(true);
+
         done();
     });
 });
