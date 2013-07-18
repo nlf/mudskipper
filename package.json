@@ -20,5 +20,13 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nlf/hapi-resourceful/issues"
+  },
+  "dependencies": {
+    "hoek": "~0.9.1"
+  },
+  "devDependencies": {
+    "hapi": "~1.8.3",
+    "lab": "~0.1.4",
+    "complexity-report": "~0.10.3"
   }
 }
