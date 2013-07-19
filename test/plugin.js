@@ -56,7 +56,7 @@ internals.resources = {
             }
         ]
     }
-}
+};
 
 // Test shortcuts
 var expect = Lab.expect;
@@ -82,9 +82,9 @@ describe('hapi-resourceful', function () {
 
         var table = server.routingTable();
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/articles')
-            || (route.method === 'get' && route.path === '/articles/{article_id}')
-            || (route.method == 'post' && route.path === '/articles');
+            return (route.method === 'get' && route.path === '/articles') ||
+                (route.method === 'get' && route.path === '/articles/{article_id}') ||
+                (route.method == 'post' && route.path === '/articles');
         });
 
         expect(found.length).to.equal(3);
@@ -96,8 +96,8 @@ describe('hapi-resourceful', function () {
 
         var table = server.routingTable();
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/users')
-            || (route.method === 'post' && route.path === '/users');
+            return (route.method === 'get' && route.path === '/users') ||
+                (route.method === 'post' && route.path === '/users');
         });
 
         expect(found.length).to.equal(2);
@@ -109,9 +109,9 @@ describe('hapi-resourceful', function () {
 
         var table = server.routingTable();
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/users/{user_id}/articles')
-            || (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}')
-            || (route.method === 'post' && route.path === '/users/{user_id}/articles');
+            return (route.method === 'get' && route.path === '/users/{user_id}/articles') ||
+                (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}') ||
+                (route.method === 'post' && route.path === '/users/{user_id}/articles');
         });
 
         expect(found.length).to.equal(3);
@@ -123,7 +123,7 @@ describe('hapi-resourceful', function () {
 
         var table = server.routingTable();
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}')
+            return (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}');
         });
 
         expect(found[0].settings).to.have.property('validate');
