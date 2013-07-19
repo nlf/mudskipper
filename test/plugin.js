@@ -54,50 +54,43 @@ describe('hapi-resourceful', function () {
         });
     });
 
-    it('registers routes', function (done) {
-
-        var articleindex = false;
-        var articleshow = false;
-        var articlecreate = false;
-
-        var userindex = false;
-        var usercreate = false;
-
-        var userarticleindex = false;
-        var userarticleshow = false;
-        var userarticlecreate = false;
+    it('registers routes for articles', function (done) {
 
         var table = server.routingTable();
-        table.forEach(function (route) {
-            if (route.method === 'get' && route.path === '/articles') {
-                articleindex = true;
-            } else if (route.method === 'get' && route.path === '/articles/{article_id}') {
-                articleshow = true;
-            } else if (route.method === 'post' && route.path === '/articles') {
-                articlecreate = true;
-            } else if (route.method === 'get' && route.path === '/users') {
-                userindex = true;
-            } else if (route.method === 'post' && route.path === '/users') {
-                usercreate = true;
-            } else if (route.method === 'get' && route.path === '/users/{user_id}/articles') {
-                userarticleindex = true;
-            } else if (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}') {
-                userarticleshow = true;
-            } else if (route.method === 'post' && route.path === '/users/{user_id}/articles') {
-                userarticlecreate = true;
-            }
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/articles')
+            || (route.method === 'get' && route.path === '/articles/{article_id}')
+            || (route.method == 'post' && route.path === '/articles');
         });
 
-        expect(articleindex).to.equal(true);
-        expect(articleshow).to.equal(true);
-        expect(articlecreate).to.equal(true);
+        expect(found.length).to.equal(3);
 
-        expect(userindex).to.equal(true);
-        expect(usercreate).to.equal(true);
+        done();
+    });
 
-        expect(userarticleindex).to.equal(true);
-        expect(userarticleshow).to.equal(true);
-        expect(userarticlecreate).to.equal(true);
+    it('registers routes for users', function (done) {
+
+        var table = server.routingTable();
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/users')
+            || (route.method === 'post' && route.path === '/users');
+        });
+
+        expect(found.length).to.equal(2);
+
+        done();
+    });
+
+    it('registers routes for articles nested on users', function (done) {
+
+        var table = server.routingTable();
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/users/{user_id}/articles')
+            || (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}')
+            || (route.method === 'post' && route.path === '/users/{user_id}/articles');
+        });
+
+        expect(found.length).to.equal(3);
 
         done();
     });
