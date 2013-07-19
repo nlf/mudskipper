@@ -52,6 +52,21 @@ var resources = {
 
 Anything specified in the object will override any defaults that are set within the plugin.
 
+Additionally, nested resources can be created by using the 'children' field
+```javascript
+var resources = {
+    articles: {
+        index: function (request) {
+        }
+    },
+    users: {
+        children: ['articles'],
+        index: function (request) {
+        }
+    }
+}
+```
+
 ###Available methods and their defaults
 * index
  - method: 'get'
