@@ -67,6 +67,24 @@ var resources = {
 }
 ```
 
+Children *must* be specified as an array. That array can contain either strings referring to a top level resource, or objects describing a new resource altogether.
+```javascript
+var resources = {
+    tests: {
+        index: function (request) {
+        },
+        children: [
+            {
+                extras: {
+                    index: function (request) {
+                    }
+                }
+            }
+        ]
+    }
+}
+```
+
 ###Available methods and their defaults
 * index
  - method: 'get'
