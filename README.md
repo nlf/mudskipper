@@ -1,4 +1,4 @@
-##hapi-resourceful
+##mudskipper
 
 This is a resourceful routing plugin for Hapi. Given an object describing the available resources, a route will be created for each method defined on the resource. For example:
 

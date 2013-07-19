@@ -1,5 +1,5 @@
 {
-  "name": "hapi-resourceful",
+  "name": "mudskipper",
   "version": "0.0.1",
   "description": "a resourceful routing plugin for hapi",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/nlf/hapi-resourceful.git"
+    "url": "git://github.com/nlf/mudskipper.git"
   },
   "keywords": [
     "hapi",
@@ -19,7 +19,7 @@
   "author": "Nathan LaFreniere <quitlahok@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nlf/hapi-resourceful/issues"
+    "url": "https://github.com/nlf/mudskipper/issues"
   },
   "dependencies": {
     "hoek": "~0.9.1",
