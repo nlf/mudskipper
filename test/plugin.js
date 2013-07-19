@@ -1,5 +1,6 @@
 var Lab = require('lab');
 var Hapi = require('hapi');
+var Types = Hapi.types;
 
 // Declare internals
 var internals = {};
@@ -9,8 +10,17 @@ internals.resources = {
         index: function (request) {
             request.reply([]);
         },
-        show: function (request) {
-            request.reply([]);
+        show: {
+            handler: function (request) {
+                request.reply([]);
+            },
+            config: {
+                validate: {
+                    path: {
+                        article_id: Types.String()
+                    }
+                }
+            }
         },
         create: {
             handler: function (request) {
@@ -105,6 +115,20 @@ describe('hapi-resourceful', function () {
         });
 
         expect(found.length).to.equal(3);
+
+        done();
+    });
+
+    it('does not lose path validation for nested routes', function (done) {
+
+        var table = server.routingTable();
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}')
+        });
+
+        expect(found[0].settings).to.have.property('validate');
+        expect(found[0].settings.validate).to.have.property('path');
+        expect(found[0].settings.validate.path).to.have.property('article_id');
 
         done();
     });
