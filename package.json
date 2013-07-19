@@ -22,7 +22,8 @@
     "url": "https://github.com/nlf/hapi-resourceful/issues"
   },
   "dependencies": {
-    "hoek": "~0.9.1"
+    "hoek": "~0.9.1",
+    "inflection": "~1.2.6"
   },
   "devDependencies": {
     "hapi": "~1.8.3",

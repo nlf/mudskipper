@@ -5,31 +5,26 @@ var Hapi = require('hapi');
 var internals = {};
 
 internals.resources = {
-    test: {
+    articles: {
         index: function (request) {
-            console.log('getting an index');
             request.reply([]);
         },
         show: function (request) {
-            console.log('showing a test object');
             request.reply([]);
         },
         create: {
             handler: function (request) {
-                console.log('creating an object');
                 request.reply('ok');
             }
         }
     },
-    deeptest: {
-        children: ['test'],
+    users: {
+        children: ['articles'],
         index: function (request) {
-            console.log('deeptest index');
             request.reply([]);
         },
         create: {
             handler: function (request) {
-                console.log('creating deeptest object');
                 request.reply('ok');
             },
             config: {
@@ -61,32 +56,48 @@ describe('hapi-resourceful', function () {
 
     it('registers routes', function (done) {
 
-        var testindex = false;
-        var testshow = false;
-        var testcreate = false;
-        var deeptestindex = false;
-        var deeptestcreate = false;
+        var articleindex = false;
+        var articleshow = false;
+        var articlecreate = false;
+
+        var userindex = false;
+        var usercreate = false;
+
+        var userarticleindex = false;
+        var userarticleshow = false;
+        var userarticlecreate = false;
 
         var table = server.routingTable();
         table.forEach(function (route) {
-            if (route.method === 'get' && route.path === '/test') {
-                testindex = true;
-            } else if (route.method === 'get' && route.path === '/test/{test_id}') {
-                testshow = true;
-            } else if (route.method === 'post' && route.path === '/test') {
-                testcreate = true;
-            } else if (route.method === 'get' && route.path === '/deeptest') {
-                deeptestindex = true;
-            } else if (route.method === 'post' && route.path === '/deeptest') {
-                deeptestcreate = true;
+            if (route.method === 'get' && route.path === '/articles') {
+                articleindex = true;
+            } else if (route.method === 'get' && route.path === '/articles/{article_id}') {
+                articleshow = true;
+            } else if (route.method === 'post' && route.path === '/articles') {
+                articlecreate = true;
+            } else if (route.method === 'get' && route.path === '/users') {
+                userindex = true;
+            } else if (route.method === 'post' && route.path === '/users') {
+                usercreate = true;
+            } else if (route.method === 'get' && route.path === '/users/{user_id}/articles') {
+                userarticleindex = true;
+            } else if (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}') {
+                userarticleshow = true;
+            } else if (route.method === 'post' && route.path === '/users/{user_id}/articles') {
+                userarticlecreate = true;
             }
         });
 
-        expect(testindex).to.equal(true);
-        expect(testshow).to.equal(true);
-        expect(testcreate).to.equal(true);
-        expect(deeptestindex).to.equal(true);
-        expect(deeptestcreate).to.equal(true);
+        expect(articleindex).to.equal(true);
+        expect(articleshow).to.equal(true);
+        expect(articlecreate).to.equal(true);
+
+        expect(userindex).to.equal(true);
+        expect(usercreate).to.equal(true);
+
+        expect(userarticleindex).to.equal(true);
+        expect(userarticleshow).to.equal(true);
+        expect(userarticlecreate).to.equal(true);
 
         done();
     });
