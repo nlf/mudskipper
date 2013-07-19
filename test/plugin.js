@@ -33,6 +33,18 @@ internals.resources = {
         index: function (request) {
             request.reply([]);
         },
+        show: {
+            handler: function (request) {
+                request.reply('ok');
+            },
+            config: {
+                validate: {
+                    path: {
+                        user_id: Types.String()
+                    }
+                }
+            }
+        },
         create: {
             handler: function (request) {
                 request.reply('ok');
@@ -119,7 +131,7 @@ describe('hapi-resourceful', function () {
         done();
     });
 
-    it('does not lose path validation for nested routes', function (done) {
+    it('does not lose validation for nested routes', function (done) {
 
         var table = server.routingTable();
         var found = table.filter(function (route) {
@@ -129,6 +141,7 @@ describe('hapi-resourceful', function () {
         expect(found[0].settings).to.have.property('validate');
         expect(found[0].settings.validate).to.have.property('path');
         expect(found[0].settings.validate.path).to.have.property('article_id');
+        expect(found[0].settings.validate.path).to.have.property('user_id');
 
         done();
     });
