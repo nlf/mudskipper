@@ -31,6 +31,20 @@ internals.resources = {
                 payload: 'parse'
             }
         }
+    },
+    tests: {
+        index: function (request) {
+            request.reply([]);
+        },
+        children: [
+            {
+                extras: {
+                    index: function (request) {
+                        request.reply([]);
+                    }
+                }
+            }
+        ]
     }
 }
 
@@ -91,6 +105,30 @@ describe('hapi-resourceful', function () {
         });
 
         expect(found.length).to.equal(3);
+
+        done();
+    });
+
+    it('registers routes for tests', function (done) {
+
+        var table = server.routingTable();
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/tests');
+        });
+
+        expect(found.length).to.equal(1);
+
+        done();
+    });
+
+    it('registers routes for extras nested on tests', function (done) {
+
+        var table = server.routingTable();
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/tests/{test_id}/extras');
+        });
+
+        expect(found.length).to.equal(1);
 
         done();
     });
