@@ -79,7 +79,7 @@ var it = Lab.test;
 
 var server;
 
-describe('hapi-resourceful', function () {
+describe('mudskipper', function () {
     it('can be added as a plugin to hapi', function (done) {
 
         server = new Hapi.Server();
