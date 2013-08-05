@@ -17,7 +17,7 @@ var resources = {
 }
 
 var server = new Hapi.Server();
-server.pack.require('hapi-resourceful', resources, function (err) {
+server.pack.require('mudskipper', resources, function (err) {
     if (err) console.error('failed to load resourceful routes:', err);
 });
 ```
