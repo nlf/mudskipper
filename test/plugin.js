@@ -26,6 +26,12 @@ internals.resources = {
             handler: function (request) {
                 request.reply('ok');
             }
+        },
+        test: {
+            path: 'test',
+            handler: function (request) {
+                request.reply('ok');
+            }
         }
     },
     users: {
@@ -96,10 +102,11 @@ describe('mudskipper', function () {
         var found = table.filter(function (route) {
             return (route.method === 'get' && route.path === '/articles') ||
                 (route.method === 'get' && route.path === '/articles/{article_id}') ||
-                (route.method == 'post' && route.path === '/articles');
+                (route.method === 'post' && route.path === '/articles') ||
+                (route.method === 'get' && route.path === '/articles/test');
         });
 
-        expect(found.length).to.equal(3);
+        expect(found.length).to.equal(4);
 
         done();
     });

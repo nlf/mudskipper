@@ -50,9 +50,27 @@ var resources = {
 }
 ```
 
-Anything specified in the object will override any defaults that are set within the plugin.
+Anything specified in the object will override any defaults that are set within the plugin. If a path is specified, it is *not* passed through directly. Some modification will be made by the plugin. For example
+```javascript
+articles: {
+    index: {
+        path: '/test'
+    }
+}
+```
+Would create the index route at the path ```/test```. If the articles resource were specified as a child of another resource, the path would be changed to ```/parent/{parent_id}/test```
 
-Additionally, nested resources can be created by using the 'children' field
+If the path is specified without a leading /, such as
+```javascript
+articles: {
+    index: {
+        path: 'test'
+    }
+}
+```
+Then the index route would be added at the path ```/articles/test``` and the nested resource would become ```/parent/{parent_id}/articles/test```
+
+Nested resources can be created by using the 'children' field
 ```javascript
 var resources = {
     articles: {
@@ -105,3 +123,5 @@ var resources = {
  - path: '/{name}/{name_id}
 
 Note that 'name' is whatever key is found in the resources object (in the above examples, it would be 'users'). name_id will be that name, after an attempt to singularize, and the literal string '_id' appended to it (the above examples would yield user_id).
+
+Methods other than those listed above may be specified, but the only default applied will be the method (get), everything else including the path *must* be specified manually.
