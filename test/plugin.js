@@ -73,6 +73,12 @@ internals.resources = {
                 }
             }
         ]
+    },
+    bananas: {
+        basePath: 'banana',
+        index: function (request) {
+            request.reply([]);
+        }
     }
 };
 
@@ -170,6 +176,17 @@ describe('mudskipper', function () {
         var table = server.routingTable();
         var found = table.filter(function (route) {
             return (route.method === 'get' && route.path === '/tests/{test_id}/extras');
+        });
+
+        expect(found.length).to.equal(1);
+
+        done();
+    });
+
+    it('allows you to override the basePath', function (done) {
+        var table = server.routingTable();
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/banana');
         });
 
         expect(found.length).to.equal(1);
