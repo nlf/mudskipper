@@ -1,9 +1,9 @@
 test:
-		@node node_modules/lab/bin/lab
+		@node node_modules/lab/bin/lab test/index.js
 test-cov: 
-		@node node_modules/lab/bin/lab -r threshold -t 100
+		@node node_modules/lab/bin/lab -r threshold -t 100 test/index.js
 test-cov-html:
-		@node node_modules/lab/bin/lab -r html -o coverage.html
+		@node node_modules/lab/bin/lab -r html -o coverage.html test/index.js
 complexity:
 		@node node_modules/complexity-report/src/cli.js -o complexity.md -f markdown lib
 
