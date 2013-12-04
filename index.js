@@ -72,6 +72,7 @@ function firstPass() {
     var key, resource, child, childName, i, l;
 
     for (key in internals.options) {
+        if (key === 'uniqueIds') continue;
         resource = internals.options[key];
         internals.dependencies[key] = {};
         saveDependencies(key, resource);
