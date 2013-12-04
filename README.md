@@ -25,7 +25,7 @@ server.pack.require('mudskipper', resources, function (err) {
 The above example would create routes for
 ```
 GET /users
-GET /users/user_id
+GET /users/{user_id}
 ```
 
 You'll notice that here, we only supplied functions for the methods. This causes the function to be used as the handler for the route, and defaults applied to the other values. Alternatively, methods can be defined as an object containing anything that's available as part of a route. For example:
@@ -70,28 +70,29 @@ articles: {
 ```
 Then the index route would be added at the path ```/articles/test``` and the nested resource would become ```/parent/{parent_id}/articles/test```
 
-Nested resources can be created by using the 'children' field
+Nested resources can be created by using the 'hasOne' or 'hasMany' fields. Circular dependencies are handled appropriately.
 ```javascript
 var resources = {
     articles: {
+        hasOne: 'users',
         index: function (request) {
         }
     },
     users: {
-        children: ['articles'],
+        hasMany: ['articles'],
         index: function (request) {
         }
     }
 }
 ```
 
-Children *must* be specified as an array. That array can contain either strings referring to a top level resource, or objects describing a new resource altogether.
+Children may be specified as a string, an object, or an array of any combination of those two. Strings must refer to a top level resource, and objects describe a new resource altogether.
 ```javascript
 var resources = {
     tests: {
         index: function (request) {
         },
-        children: [
+        hasMany: [
             {
                 extras: {
                     index: function (request) {
@@ -124,4 +125,4 @@ var resources = {
 
 Note that 'name' is whatever key is found in the resources object (in the above examples, it would be 'users'). name_id will be that name, after an attempt to singularize, and the literal string '_id' appended to it (the above examples would yield user_id).
 
-Methods other than those listed above may be specified, but the only default applied will be the method (get), everything else including the path *must* be specified manually.
+Additionally, you can specify a top level option ```uniqueIds: false``` and ids will be created such as /name/{id}/subname/{sub_id} rather than attempting to singularize name and subname.

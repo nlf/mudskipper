@@ -7,6 +7,7 @@ var internals = {};
 
 internals.resources = {
     articles: {
+        hasOne: 'users',
         index: function (request) {
             request.reply([]);
         },
@@ -26,16 +27,10 @@ internals.resources = {
             handler: function (request) {
                 request.reply('ok');
             }
-        },
-        test: {
-            path: 'test',
-            handler: function (request) {
-                request.reply('ok');
-            }
         }
     },
     users: {
-        children: ['articles'],
+        hasMany: ['articles'],
         index: function (request) {
             request.reply([]);
         },
@@ -64,9 +59,10 @@ internals.resources = {
         index: function (request) {
             request.reply([]);
         },
-        children: [
+        hasMany: [
             {
                 extras: {
+                    hasOne: 'bananas',
                     index: function (request) {
                         request.reply([]);
                     }
@@ -75,7 +71,7 @@ internals.resources = {
         ]
     },
     bananas: {
-        basePath: 'banana',
+        hasMany: 'articles',
         index: function (request) {
             request.reply([]);
         }
@@ -108,11 +104,10 @@ describe('mudskipper', function () {
         var found = table.filter(function (route) {
             return (route.method === 'get' && route.path === '/articles') ||
                 (route.method === 'get' && route.path === '/articles/{article_id}') ||
-                (route.method === 'post' && route.path === '/articles') ||
-                (route.method === 'get' && route.path === '/articles/test');
+                (route.method === 'post' && route.path === '/articles');
         });
 
-        expect(found.length).to.equal(4);
+        expect(found.length).to.equal(3);
 
         done();
     });
@@ -176,17 +171,6 @@ describe('mudskipper', function () {
         var table = server.routingTable();
         var found = table.filter(function (route) {
             return (route.method === 'get' && route.path === '/tests/{test_id}/extras');
-        });
-
-        expect(found.length).to.equal(1);
-
-        done();
-    });
-
-    it('allows you to override the basePath', function (done) {
-        var table = server.routingTable();
-        var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/banana');
         });
 
         expect(found.length).to.equal(1);
