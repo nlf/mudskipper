@@ -119,6 +119,10 @@ var resources = {
  - method: 'put'
  - path: '/{name}/{name_id}
  - payload: 'parse'
+* patch
+ - method: 'patch'
+ - path: '/{name}/{name_id}
+ - payload: 'parse'
 * destroy
  - method: 'delete'
  - path: '/{name}/{name_id}

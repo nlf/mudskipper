@@ -26,6 +26,12 @@ var internals = {
                 payload: 'parse'
             }
         },
+        patch: {
+            method: 'patch',
+            config: {
+                payload: 'parse'
+            }
+        },
         destroy: {
             method: 'delete'
         }
@@ -101,7 +107,7 @@ function secondPass() {
         objectPath = internals.options.uniqueIds ? [key, '{' + singular + '_id}'] : [key, '{id}'];
 
         for (method in resource) {
-            if (['index', 'create', 'show', 'update', 'destroy'].indexOf(method) === -1) continue;
+            if (['index', 'create', 'show', 'update', 'patch', 'destroy'].indexOf(method) === -1) continue;
 
             if (typeof resource[method] === 'function') resource[method] = { handler: resource[method] };
 
@@ -178,7 +184,7 @@ function addChild(parent, path, child, singular) {
         }
 
         for (method in internals.resources[childName]) {
-            if (['index', 'create', 'show', 'update', 'destroy'].indexOf(method) === -1) continue;
+            if (['index', 'create', 'show', 'update', 'patch', 'destroy'].indexOf(method) === -1) continue;
             if (typeof internals.resources[childName][method] === 'function') internals.resources[childName][method] = { handler: internals.resources[childName][method] };
 
             route = Hoek.applyToDefaults(internals.defaults[method], settings[method]);
