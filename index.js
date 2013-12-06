@@ -114,10 +114,22 @@ function secondPass() {
             if (typeof resource[method] === 'function') resource[method] = { handler: resource[method] };
 
             settings = Hoek.applyToDefaults(internals.defaults[method], resource[method]);
-            if (method === 'index' || method === 'create') {
-                settings.path = '/' + rootPath.join('/');
+            if (resource[method].path) {
+                if (resource[method].path.charAt(0) === '/') {
+                    settings.path = resource[method].path;
+                } else {
+                    if (method === 'index' || method === 'create') {
+                        settings.path = '/' + rootPath.join('/') + '/' + resource[method].path;
+                    } else {
+                        settings.path = '/' + objectPath.join('/') + '/' + resource[method].path;
+                    }
+                }
             } else {
-                settings.path = '/' + objectPath.join('/');
+                if (method === 'index' || method === 'create') {
+                    settings.path = '/' + rootPath.join('/');
+                } else {
+                    settings.path = '/' + objectPath.join('/');
+                }
             }
             settings.config = Hoek.applyToDefaults({ context: { hypermedia: {} } }, settings.config || {});
             settings.config.context.hypermedia.self = { link: '/' + rootPath.join('/') };
