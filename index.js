@@ -95,12 +95,14 @@ function firstPass() {
 // additionally, it ensures that methods for all resources are
 // an object containing a handler property set to a function
 function secondPass() {
-    var key, resource, singular, method, settings, rootPath, objectPath, children;
+    var key, resource, singular, method, settings, rootPath, objectPath, children, hasOneKeys, hasManyKeys;
 
     for (key in internals.resources) {
         resource = internals.resources[key];
         if (resource.childOnly) continue;
         children = findChildren(key);
+        hasOneKeys = Object.keys(children.hasOne);
+        hasManyKeys = Object.keys(children.hasMany);
 
         singular = Inflection.singularize(key);
         rootPath = [key];
@@ -117,14 +119,31 @@ function secondPass() {
             } else {
                 settings.path = '/' + objectPath.join('/');
             }
+            settings.config = Hoek.applyToDefaults({ context: { hypermedia: {} } }, settings.config || {});
+            settings.config.context.hypermedia.self = { link: '/' + rootPath.join('/') };
+            settings.config.context.hypermedia.up = { link: '/' };
+            settings.config.context.hypermedia.item = { link: '/' + objectPath.join('/') };
+            var routeChildren = [];
+            if (hasOneKeys.length) {
+                hasOneKeys.forEach(function (k) {
+                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + Inflection.singularize(k) });
+                });
+            }
+
+            if (hasManyKeys.length) {
+                hasManyKeys.forEach(function (k) {
+                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + k });
+                });
+            }
+            settings.config.context.hypermedia.children = routeChildren;
             internals.routes.push(settings);
         }
 
-        if (Object.keys(children.hasOne).length) {
+        if (hasOneKeys.length) {
             addChild(resource, objectPath, children.hasOne, true);
         }
 
-        if (Object.keys(children.hasMany).length) {
+        if (hasManyKeys.length) {
             addChild(resource, objectPath, children.hasMany, false);
         }
     }
@@ -159,10 +178,12 @@ function findChildren(parent, children, parents) {
 }
 
 function addChild(parent, path, child, singular) {
-    var i, l, childName, childSingular, settings, method, rootPath, objectPath, route;
+    var i, l, childName, childSingular, settings, method, rootPath, objectPath, route, hasOneKeys, hasManyKeys;
 
     for (i = 0, l = Object.keys(child).length; i < l; i++) {
         childName = Object.keys(child)[i];
+        hasOneKeys = Object.keys(child[childName].hasOne);
+        hasManyKeys = Object.keys(child[childName].hasMany);
         childSingular = Inflection.singularize(childName);
         settings = Hoek.merge(internals.resources[childName], parent);
         rootPath = singular ? path.concat([childSingular]) : path.concat([childName]);
@@ -199,11 +220,28 @@ function addChild(parent, path, child, singular) {
                     route.path = '/' + objectPath.join('/');
                 }
             }
+            route.config = Hoek.applyToDefaults({ context: { hypermedia: {} } }, route.config || {});
+            route.config.context.hypermedia.self = { link: '/' + rootPath.join('/') };
+            route.config.context.hypermedia.up = { link: '/' + path.join('/') };
+            route.config.context.hypermedia.item = { link: '/' + objectPath.join('/') };
+            var routeChildren = [];
+            if (hasOneKeys.length) {
+                hasOneKeys.forEach(function (k) {
+                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + Inflection.singularize(k) });
+                });
+            }
+
+            if (hasManyKeys.length) {
+                hasManyKeys.forEach(function (k) {
+                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + k });
+                });
+            }
+            route.config.context.hypermedia.children = routeChildren;
             internals.routes.push(route);
         }
 
-        if (child[childName].hasOne) addChild(settings, objectPath, child[childName].hasOne, true);
-        if (child[childName].hasMany) addChild(settings, objectPath, child[childName].hasMany, false);
+        if (hasOneKeys.length) addChild(settings, objectPath, child[childName].hasOne, true);
+        if (hasManyKeys.length) addChild(settings, objectPath, child[childName].hasMany, false);
     }
 }
 
