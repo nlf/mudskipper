@@ -95,7 +95,7 @@ function firstPass() {
 // additionally, it ensures that methods for all resources are
 // an object containing a handler property set to a function
 function secondPass() {
-    var key, resource, singular, method, settings, rootPath, objectPath, children, hasOneKeys, hasManyKeys;
+    var key, resource, method, settings, objectPath, children, hasOneKeys, hasManyKeys;
 
     for (key in internals.resources) {
         resource = internals.resources[key];
@@ -103,10 +103,7 @@ function secondPass() {
         children = findChildren(key);
         hasOneKeys = Object.keys(children.hasOne);
         hasManyKeys = Object.keys(children.hasMany);
-
-        singular = Inflection.singularize(key);
-        rootPath = [key];
-        objectPath = internals.options.uniqueIds ? [key, '{' + singular + '_id}'] : [key, '{id}'];
+        objectPath = generateRoute(key, 'show', false, []);
 
         for (method in resource) {
             if (['index', 'create', 'show', 'update', 'patch', 'destroy'].indexOf(method) === -1) continue;
@@ -114,40 +111,7 @@ function secondPass() {
             if (typeof resource[method] === 'function') resource[method] = { handler: resource[method] };
 
             settings = Hoek.applyToDefaults(internals.defaults[method], resource[method]);
-            if (resource[method].path) {
-                if (resource[method].path.charAt(0) === '/') {
-                    settings.path = resource[method].path;
-                } else {
-                    if (method === 'index' || method === 'create') {
-                        settings.path = '/' + rootPath.join('/') + '/' + resource[method].path;
-                    } else {
-                        settings.path = '/' + objectPath.join('/') + '/' + resource[method].path;
-                    }
-                }
-            } else {
-                if (method === 'index' || method === 'create') {
-                    settings.path = '/' + rootPath.join('/');
-                } else {
-                    settings.path = '/' + objectPath.join('/');
-                }
-            }
-            settings.config = Hoek.applyToDefaults({ context: { hypermedia: {} } }, settings.config || {});
-            settings.config.context.hypermedia.self = { link: '/' + rootPath.join('/') };
-            settings.config.context.hypermedia.up = { link: '/' };
-            settings.config.context.hypermedia.item = { link: '/' + objectPath.join('/') };
-            var routeChildren = [];
-            if (hasOneKeys.length) {
-                hasOneKeys.forEach(function (k) {
-                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + Inflection.singularize(k) });
-                });
-            }
-
-            if (hasManyKeys.length) {
-                hasManyKeys.forEach(function (k) {
-                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + k });
-                });
-            }
-            settings.config.context.hypermedia.children = routeChildren;
+            settings.path = '/' + generateRoute(key, method, false, []).join('/');
             internals.routes.push(settings);
         }
 
@@ -189,32 +153,56 @@ function findChildren(parent, children, parents) {
     return children;
 }
 
+function generateRoute(name, method, singular, currentPath) {
+    var segments = [].concat(currentPath);
+    var nextSegment = '';
+
+    if (singular) {
+        nextSegment = Inflection.singularize(name);
+    }
+
+    if (internals.resources[name].path) {
+        if (internals.resources[name].charAt(0) === '/') {
+            return internals.resources[name].path.slice(1).split('/');
+        } else {
+            nextSegment = internals.resources[name].path;
+        }
+    }
+
+    segments.push(nextSegment || name);
+
+    nextSegment = '';
+    if (internals.resources[name].uniqueIds === false) {
+        if (currentPath.length) {
+            currentPath.forEach(function (p) {
+                if (p.charAt(0) === '{') {
+                    nextSegment = 'sub_' + nextSegment;
+                }
+            });
+        } else {
+            nextSegment = 'id';
+        }
+    } else {
+        nextSegment = Inflection.singularize(name) + '_';
+    }
+    nextSegment = '{' + nextSegment + 'id}';
+
+    if (method !== 'index' && method !== 'create') {
+        segments.push(nextSegment);
+    }
+
+    return segments;
+}
+
 function addChild(parent, path, child, singular) {
-    var i, l, childName, childSingular, settings, method, rootPath, objectPath, route, hasOneKeys, hasManyKeys;
+    var i, l, childName, settings, method, objectPath, route, hasOneKeys, hasManyKeys;
 
     for (i = 0, l = Object.keys(child).length; i < l; i++) {
         childName = Object.keys(child)[i];
         hasOneKeys = Object.keys(child[childName].hasOne);
         hasManyKeys = Object.keys(child[childName].hasMany);
-        childSingular = Inflection.singularize(childName);
         settings = Hoek.merge(internals.resources[childName], parent);
-        rootPath = singular ? path.concat([childSingular]) : path.concat([childName]);
-        if (singular) {
-            objectPath = rootPath;
-        } else {
-            if (internals.options.uniqueIds) {
-                objectPath = path.concat([childName, '{' + childSingular + '_id}']);
-            } else {
-                var subStr = '';
-                path.join('').split('').forEach(function (character) {
-                    if (character === '{') {
-                        subStr += 'sub_';
-                    }
-                });
-                subStr += 'id';
-                objectPath = path.concat([childName, '{' + subStr + '}']);
-            }
-        }
+        objectPath = generateRoute(childName, 'show', singular, path);
 
         for (method in internals.resources[childName]) {
             if (['index', 'create', 'show', 'update', 'patch', 'destroy'].indexOf(method) === -1) continue;
@@ -222,33 +210,7 @@ function addChild(parent, path, child, singular) {
 
             route = Hoek.applyToDefaults(internals.defaults[method], settings[method]);
 
-            if (singular) {
-                if (method === 'index' || method === 'create') continue;
-                route.path = '/' + rootPath.join('/');
-            } else {
-                if (method === 'index' || method === 'create') {
-                    route.path = '/' + rootPath.join('/');
-                } else {
-                    route.path = '/' + objectPath.join('/');
-                }
-            }
-            route.config = Hoek.applyToDefaults({ context: { hypermedia: {} } }, route.config || {});
-            route.config.context.hypermedia.self = { link: '/' + rootPath.join('/') };
-            route.config.context.hypermedia.up = { link: '/' + path.join('/') };
-            route.config.context.hypermedia.item = { link: '/' + objectPath.join('/') };
-            var routeChildren = [];
-            if (hasOneKeys.length) {
-                hasOneKeys.forEach(function (k) {
-                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + Inflection.singularize(k) });
-                });
-            }
-
-            if (hasManyKeys.length) {
-                hasManyKeys.forEach(function (k) {
-                    routeChildren.push({ name: k, href: '/' + objectPath.join('/') + '/' + k });
-                });
-            }
-            route.config.context.hypermedia.children = routeChildren;
+            route.path = '/' + generateRoute(childName, method, singular, path).join('/');
             internals.routes.push(route);
         }
 
