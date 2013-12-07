@@ -190,7 +190,7 @@ function generateHypermedia(name, path, singular) {
             items: []
         };
         Object.keys(internals.resources).forEach(function (key) {
-            if (internals.resources[key].childOnly) return;
+            if (internals.resources[key].childOnly || key === 'root') return;
             hypermedia.collection.links.push({ name: key, href: '/' + key });
         });
         return hypermedia;

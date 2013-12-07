@@ -6,6 +6,7 @@ var Types = Hapi.types;
 var internals = {};
 
 internals.resources = {
+    root: function (request) { request.reply([]); },
     articles: {
         hasOne: 'users',
         index: function (request) {
