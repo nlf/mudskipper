@@ -248,6 +248,7 @@ function generateHypermedia(name, path, singular) {
         });
     }
 
+    console.log(hypermedia);
     return hypermedia;
 }
 
