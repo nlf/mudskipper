@@ -186,6 +186,7 @@ function generateHypermedia(name, path, singular) {
     var hypermedia = {};
     if (name === 'root') {
         hypermedia.collection = {
+            methods: ['get'],
             links: [],
             items: []
         };
@@ -205,18 +206,26 @@ function generateHypermedia(name, path, singular) {
 
     if (!singular) {
         hypermedia.collection = {
+            methods: [],
             links: [],
             items: []
         };
+        if (internals.resources[name].index) hypermedia.collection.methods.push('get');
+        if (internals.resources[name].create) hypermedia.collection.methods.push('post');
         hypermedia.collection.links.push({ name: 'self', href: rootPath });
         hypermedia.collection.links.push({ name: 'up', href: upPath });
         hypermedia.collection.links.push({ name: 'item', href: itemPath });
     }
 
     hypermedia.item = {
+        methods: [],
         links: [],
         items: []
     };
+    if (internals.resources[name].show) hypermedia.item.methods.push('get');
+    if (internals.resources[name].update) hypermedia.item.methods.push('put');
+    if (internals.resources[name].patch) hypermedia.item.methods.push('patch');
+    if (internals.resources[name].destroy) hypermedia.item.methods.push('delete');
     hypermedia.item.links.push({ name: 'self', href: singular ? rootPath : itemPath });
     hypermedia.item.links.push({ name: 'up', href: singular ? upPath : rootPath });
     if (hasOne.length) {
