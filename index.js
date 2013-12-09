@@ -119,6 +119,8 @@ function secondPass() {
             settings = Hoek.applyToDefaults(internals.defaults.index, resource);
             settings.path = '/';
             settings.config.context.hypermedia = hypermedia.collection;
+            delete settings.collectionLinks;
+            delete settings.itemLinks;
             internals.routes.push(settings);
             continue;
         }
@@ -141,6 +143,8 @@ function secondPass() {
             } else {
                 settings.config.context.hypermedia = hypermedia.item;
             }
+            delete settings.itemLinks;
+            delete settings.collectionLinks;
             internals.routes.push(settings);
         }
 
@@ -196,6 +200,7 @@ function generateHypermedia(name, path, singular) {
             if (internals.resources[key].childOnly || key === 'root') return;
             hypermedia.collection.links[key] = { href: '/' + key };
         });
+        if (resource.collectionLinks) hypermedia.collection.links = Hoek.merge(hypermedia.collection.links, resource.collectionLinks);
         return hypermedia;
     }
 
@@ -212,11 +217,12 @@ function generateHypermedia(name, path, singular) {
             links: {},
             items: {}
         };
-        if (internals.resources[name].index) hypermedia.collection.methods.push('get');
-        if (internals.resources[name].create) hypermedia.collection.methods.push('post');
+        if (resource.index) hypermedia.collection.methods.push('get');
+        if (resource.create) hypermedia.collection.methods.push('post');
         hypermedia.collection.links.self = { href: rootPath };
         hypermedia.collection.links.up = { href: upPath };
         hypermedia.collection.links.item = { href: itemPath };
+        if (resource.collectionLinks) hypermedia.collection.links = Hoek.merge(hypermedia.collection.links, resource.collectionLinks);
     }
 
     hypermedia.item = {
@@ -224,12 +230,13 @@ function generateHypermedia(name, path, singular) {
         links: {},
         items: {}
     };
-    if (internals.resources[name].show) hypermedia.item.methods.push('get');
-    if (internals.resources[name].update) hypermedia.item.methods.push('put');
-    if (internals.resources[name].patch) hypermedia.item.methods.push('patch');
-    if (internals.resources[name].destroy) hypermedia.item.methods.push('delete');
+    if (resource.show) hypermedia.item.methods.push('get');
+    if (resource.update) hypermedia.item.methods.push('put');
+    if (resource.patch) hypermedia.item.methods.push('patch');
+    if (resource.destroy) hypermedia.item.methods.push('delete');
     hypermedia.item.links.self = { href: singular ? rootPath : itemPath };
     hypermedia.item.links.up = { href: singular ? upPath : rootPath };
+    if (resource.itemLinks) hypermedia.item.links = Hoek.merge(hypermedia.item.links, resource.itemLinks);
 
     if (hasOne.length) {
         hasOne = hasOne.filter(function (key) {
@@ -331,6 +338,8 @@ function addChild(parent, path, child, singular) {
             } else {
                 route.config.context.hypermedia = hypermedia.item;
             }
+            delete route.itemLinks;
+            delete route.collectionLinks;
             internals.routes.push(route);
         }
 

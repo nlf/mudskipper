@@ -6,8 +6,17 @@ var Types = Hapi.types;
 var internals = {};
 
 internals.resources = {
-    root: function (request) { request.reply([]); },
+    root: {
+        handler: function (request) { request.reply([]); },
+        collectionLinks: { self: { href: '/notroot' }, random: { href: '/thing' } }
+    },
     articles: {
+        itemLinks: {
+            random: { href: '/thing' }
+        },
+        collectionLinks: {
+            self: { href: '/notusers' }
+        },
         hasOne: 'users',
         index: function (request) {
             request.reply([]);
