@@ -183,16 +183,18 @@ function findChildren(parent, children, parents) {
 }
 
 function generateHypermedia(name, path, singular) {
+    var resource = internals.resources[name];
     var hypermedia = {};
+
     if (name === 'root') {
         hypermedia.collection = {
             methods: ['get'],
-            links: [],
-            items: []
+            links: {},
+            items: {}
         };
         Object.keys(internals.resources).forEach(function (key) {
             if (internals.resources[key].childOnly || key === 'root') return;
-            hypermedia.collection.links.push({ name: key, href: '/' + key });
+            hypermedia.collection.links[key] = { href: '/' + key };
         });
         return hypermedia;
     }
@@ -202,46 +204,45 @@ function generateHypermedia(name, path, singular) {
     var rootPath = '/' + generateRoute(name, 'index', singular, path).join('/');
     var itemPath = '/' + generateRoute(name, 'show', singular, path).join('/');
     var upPath = path ? '/' + path.join('/') : '/';
-    var child;
+    var href, methods;
 
     if (!singular) {
         hypermedia.collection = {
             methods: [],
-            links: [],
-            items: []
+            links: {},
+            items: {}
         };
         if (internals.resources[name].index) hypermedia.collection.methods.push('get');
         if (internals.resources[name].create) hypermedia.collection.methods.push('post');
-        hypermedia.collection.links.push({ name: 'self', href: rootPath });
-        hypermedia.collection.links.push({ name: 'up', href: upPath });
-        hypermedia.collection.links.push({ name: 'item', href: itemPath });
+        hypermedia.collection.links.self = { href: rootPath };
+        hypermedia.collection.links.up = { href: upPath };
+        hypermedia.collection.links.item = { href: itemPath };
     }
 
     hypermedia.item = {
         methods: [],
-        links: [],
-        items: []
+        links: {},
+        items: {}
     };
     if (internals.resources[name].show) hypermedia.item.methods.push('get');
     if (internals.resources[name].update) hypermedia.item.methods.push('put');
     if (internals.resources[name].patch) hypermedia.item.methods.push('patch');
     if (internals.resources[name].destroy) hypermedia.item.methods.push('delete');
-    hypermedia.item.links.push({ name: 'self', href: singular ? rootPath : itemPath });
-    hypermedia.item.links.push({ name: 'up', href: singular ? upPath : rootPath });
+    hypermedia.item.links.self = { href: singular ? rootPath : itemPath };
+    hypermedia.item.links.up = { href: singular ? upPath : rootPath };
 
     if (hasOne.length) {
         hasOne = hasOne.filter(function (key) {
             return path.indexOf(key) === -1 && path.indexOf(Inflection.singularize(key)) === -1;
         });
         hasOne.forEach(function (key) {
-            child = { name: Inflection.singularize(key) };
-            child.href = '/' + generateRoute(key, 'show', true, itemPath.slice(1).split('/')).join('/');
-            child.methods = [];
-            if (internals.resources[key].show) child.methods.push('get');
-            if (internals.resources[key].update) child.methods.push('put');
-            if (internals.resources[key].patch) child.methods.push('patch');
-            if (internals.resources[key].destroy) child.methods.push('delete');
-            hypermedia.item.items.push(child);
+            href = '/' + generateRoute(key, 'show', true, itemPath.slice(1).split('/')).join('/');
+            methods = [];
+            if (internals.resources[key].show) methods.push('get');
+            if (internals.resources[key].update) methods.push('put');
+            if (internals.resources[key].patch) methods.push('patch');
+            if (internals.resources[key].destroy) methods.push('delete');
+            hypermedia.item.items[Inflection.singularize(key)] = { href: href, methods: methods };
         });
     }
 
@@ -250,12 +251,11 @@ function generateHypermedia(name, path, singular) {
             return path.indexOf(key) === -1 && path.indexOf(Inflection.singularize(key)) === -1;
         });
         hasMany.forEach(function (key) {
-            child = { name: key };
-            child.href = '/' + generateRoute(key, 'index', false, itemPath.slice(1).split('/')).join('/');
-            child.methods = [];
-            if (internals.resources[key].index) child.methods.push('get');
-            if (internals.resources[key].create) child.methods.push('post');
-            hypermedia.item.items.push(child);
+            href = '/' + generateRoute(key, 'index', false, itemPath.slice(1).split('/')).join('/');
+            methods = [];
+            if (internals.resources[key].index) methods.push('get');
+            if (internals.resources[key].create) methods.push('post');
+            hypermedia.item.items[key] = { href: href, methods: methods };
         });
     }
 
