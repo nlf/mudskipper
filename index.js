@@ -288,7 +288,7 @@ function generateRoute(name, method, singular, path) {
     segments.push(nextSegment || name);
 
     nextSegment = '';
-    if (internals.resources[name].uniqueIds === false) {
+    if (internals.options.uniqueIds === false) {
         if (path.length) {
             path.forEach(function (p) {
                 if (p.charAt(0) === '{') {
