@@ -294,8 +294,6 @@ function generateRoute(name, method, singular, path) {
                     nextSegment = 'sub_' + nextSegment;
                 }
             });
-        } else {
-            nextSegment = 'id';
         }
     } else {
         nextSegment = Inflection.singularize(name) + '_';
