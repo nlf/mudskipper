@@ -193,7 +193,7 @@ function generateHypermedia(name, path, singular) {
     if (name === 'root') {
         hypermedia.collection = {
             methods: ['get'],
-            links: {},
+            links: { self: { href: '/' }, up: { href: '/' } },
             items: {}
         };
         Object.keys(internals.resources).forEach(function (key) {
