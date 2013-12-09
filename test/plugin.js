@@ -101,7 +101,7 @@ describe('mudskipper', function () {
     it('can be added as a plugin to hapi', function (done) {
 
         server = new Hapi.Server();
-        server.pack.require('../', internals.resources, function (err) {
+        server.pack.require('../', internals, function (err) {
 
             expect(err).to.not.exist;
             done();

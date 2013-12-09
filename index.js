@@ -91,7 +91,6 @@ function firstPass() {
     var key, resource, child, childName, i, l;
 
     for (key in internals.options) {
-        if (key === 'uniqueIds') continue;
         resource = internals.options[key];
         internals.dependencies[key] = {};
         saveDependencies(key, resource);
@@ -288,7 +287,7 @@ function generateRoute(name, method, singular, path) {
     segments.push(nextSegment || name);
 
     nextSegment = '';
-    if (internals.options.uniqueIds === false) {
+    if (internals.uniqueIds === false) {
         if (path.length) {
             path.forEach(function (p) {
                 if (p.charAt(0) === '{') {
@@ -350,11 +349,11 @@ function addChild(parent, path, child, singular) {
 
 exports.register = function _register(plugin, options, next) {
     Hoek.assert(typeof options === 'object', 'Options must be defined as an object');
-    Hoek.assert(Object.keys(options).length > 0, 'Options must contain at least one key');
+    Hoek.assert(options.resources, 'Options must contain a resources key');
 
     internals.plugin = plugin;
-    internals.options = options;
-    if (!internals.options.hasOwnProperty('uniqueIds')) internals.options.uniqueIds = true;
+    internals.options = options.resources;
+    internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
     firstPass();
     next();
 };
