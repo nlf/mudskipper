@@ -314,7 +314,6 @@ function addChild(parent, path, child, singular) {
         childName = Object.keys(child)[i];
         hasOneKeys = Object.keys(child[childName].hasOne);
         hasManyKeys = Object.keys(child[childName].hasMany);
-        settings = Hoek.merge(internals.resources[childName], parent);
         objectPath = generateRoute(childName, 'show', singular, path);
         hypermedia = generateHypermedia(childName, path, singular);
 
@@ -326,8 +325,9 @@ function addChild(parent, path, child, singular) {
             }
 
             if (typeof internals.resources[childName][method] === 'function') internals.resources[childName][method] = { handler: internals.resources[childName][method] };
+            settings = parent && parent[method] ? Hoek.merge(parent[method], internals.resources[childName][method]) : internals.resources[childName][method];
 
-            route = Hoek.applyToDefaults(internals.defaults[method], settings[method]);
+            route = Hoek.applyToDefaults(internals.defaults[method], settings);
 
             route.path = '/' + generateRoute(childName, method, singular, path).join('/');
             if (method === 'index' || method === 'create') {
