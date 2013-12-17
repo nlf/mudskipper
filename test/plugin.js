@@ -5,6 +5,13 @@ var Types = Hapi.types;
 // Declare internals
 var internals = {};
 
+// Test shortcuts
+var expect = Lab.expect;
+var before = Lab.before;
+var after = Lab.after;
+var describe = Lab.experiment;
+var it = Lab.test;
+
 internals.resources = {
     root: {
         handler: function (request) { request.reply([]); },
@@ -39,8 +46,16 @@ internals.resources = {
             }
         }
     },
+    articlesFail: {
+        create: {
+            handler: function (request) {
+                expect(request.params.users_id).to.be.a('string');
+                request.reply('ok');
+            }
+        }
+    },
     users: {
-        hasMany: ['articles'],
+        hasMany: ['articles', 'articlesFail'],
         index: function (request) {
             request.reply([]);
         },
@@ -58,6 +73,7 @@ internals.resources = {
         },
         create: {
             handler: function (request) {
+                expect(request.payload).to.deep.equal({ name: 'test' });
                 request.reply('ok');
             },
             config: {
@@ -88,12 +104,6 @@ internals.resources = {
     }
 };
 
-// Test shortcuts
-var expect = Lab.expect;
-var before = Lab.before;
-var after = Lab.after;
-var describe = Lab.experiment;
-var it = Lab.test;
 
 var server;
 
@@ -186,5 +196,27 @@ describe('mudskipper', function () {
         expect(found.length).to.equal(1);
 
         done();
+    });
+
+    it('allows a POST to get properly parsed', function (done) {
+
+        server.inject({ method: 'POST', url: '/users', payload: '{ "name": "test" }' }, function (res) {
+
+            expect(res.result).to.equal('ok');
+
+            done();
+        });
+
+    });
+
+    it('a "hasMany" nested resource should have a "hasOne" reference to parent resource', function (done) {
+
+        server.inject({ method: 'POST', url: '/users/foo/articlesFail', payload: '{}' }, function (res) {
+
+            expect(res.result.code).to.equal(500);
+
+            done();
+        });
+
     });
 });
