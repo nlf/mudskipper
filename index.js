@@ -136,10 +136,11 @@ function secondPass() {
             if (typeof resource[method] === 'function') resource[method] = { handler: resource[method] };
 
             settings = Hoek.applyToDefaults(internals.defaults[method], resource[method]);
+            if (settings.config && settings.config.validate && settings.config.validate.path) delete settings.config.validate.path;
             settings.path = '/' + generateRoute(key, method, false, []).join('/');
-            if (method === 'index' || method === 'create') {
+            if (method === 'index') {
                 settings.config.context.hypermedia = hypermedia.collection;
-            } else {
+            } else if (method === 'show') {
                 settings.config.context.hypermedia = hypermedia.item;
             }
             delete settings.itemLinks;
@@ -170,8 +171,7 @@ function findChildren(parent, children, parents) {
     function addChildren(prop) {
         for (var i = 0, l = deps[prop].length; i < l; i++) {
             if (parents.indexOf(deps[prop][i]) !== -1) continue;
-            parents.push(deps[prop][i]);
-            children[prop][deps[prop][i]] = findChildren(deps[prop][i], children[prop][parent], parents);
+            children[prop][deps[prop][i]] = findChildren(deps[prop][i], children[prop][parent], parents.concat([deps[prop][i]]));
         }
     }
 
@@ -310,6 +310,16 @@ function generateRoute(name, method, singular, path) {
 function addChild(parent, path, child, singular) {
     var i, l, childName, settings, method, objectPath, route, hasOneKeys, hasManyKeys, hypermedia;
 
+    function stripHandlers(obj) {
+        var result = Hoek.clone(obj);
+        for (var m in result) {
+            if (result[m].handler) delete result[m].handler;
+        }
+        return result;
+    }
+
+    parent = stripHandlers(parent);
+
     for (i = 0, l = Object.keys(child).length; i < l; i++) {
         childName = Object.keys(child)[i];
         hasOneKeys = Object.keys(child[childName].hasOne);
@@ -326,13 +336,14 @@ function addChild(parent, path, child, singular) {
 
             if (typeof internals.resources[childName][method] === 'function') internals.resources[childName][method] = { handler: internals.resources[childName][method] };
             settings = parent && parent[method] ? Hoek.merge(parent[method], internals.resources[childName][method]) : internals.resources[childName][method];
+            if (settings.config && settings.config.validate && settings.config.validate.path) delete settings.config.validate.path;
 
             route = Hoek.applyToDefaults(internals.defaults[method], settings);
 
             route.path = '/' + generateRoute(childName, method, singular, path).join('/');
-            if (method === 'index' || method === 'create') {
+            if (method === 'index') {
                 route.config.context.hypermedia = hypermedia.collection;
-            } else {
+            } else if (method === 'show') {
                 route.config.context.hypermedia = hypermedia.item;
             }
             delete route.itemLinks;
