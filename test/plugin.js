@@ -49,8 +49,7 @@ internals.resources = {
     articlesFail: {
         create: {
             handler: function (request) {
-                expect(request.params.users_id).to.be.a('string');
-                request.reply('ok');
+                request.reply('not ok').code(500);
             }
         }
     },
@@ -203,6 +202,7 @@ describe('mudskipper', function () {
         server.inject({ method: 'POST', url: '/users', payload: '{ "name": "test" }' }, function (res) {
 
             expect(res.result).to.equal('ok');
+            expect(res.statusCode).to.equal(200);
 
             done();
         });
@@ -213,7 +213,8 @@ describe('mudskipper', function () {
 
         server.inject({ method: 'POST', url: '/users/foo/articlesFail', payload: '{}' }, function (res) {
 
-            expect(res.result.code).to.equal(500);
+            expect(res.result).to.equal('not ok');
+            expect(res.statusCode).to.equal(500);
 
             done();
         });
