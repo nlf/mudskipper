@@ -1,6 +1,6 @@
 {
   "name": "mudskipper",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "a resourceful routing plugin for hapi",
   "main": "index.js",
   "scripts": {
@@ -23,10 +23,11 @@
   },
   "dependencies": {
     "hoek": "~0.9.1",
-    "inflection": "~1.2.6"
+    "inflection": "~1.2.6",
+    "async": "~0.2.9"
   },
   "devDependencies": {
-    "hapi": "~1.8.3",
+    "hapi": "~1.20.0",
     "lab": "~0.1.4",
     "complexity-report": "~0.10.3",
     "precommit-hook": "~0.3.5"
