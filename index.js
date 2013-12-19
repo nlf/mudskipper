@@ -185,7 +185,7 @@ function findChildren(parent, children, parents) {
     return children;
 }
 
-function generateHypermedia(name, path, singular) {
+function generateHypermedia(name, path, singular, parent) {
     var resource = internals.resources[name];
     var hypermedia = {};
 
@@ -215,8 +215,27 @@ function generateHypermedia(name, path, singular) {
     var hasMany = internals.dependencies[name].hasMany;
     var rootPath = '/' + generateRoute(name, 'index', singular, path).join('/');
     var itemPath = '/' + generateRoute(name, 'show', singular, path).join('/');
-    var upPath = path ? '/' + path.join('/') : '/';
-    var href, methods;
+    var href, methods, upPath, singularParent;
+
+    if (!parent) {
+        upPath = '/';
+    } else {
+        singularParent = path[path.length - 1].indexOf('{') === -1;
+
+        if (singularParent) {
+            if (parent.index || parent.create) {
+                upPath = '/' + path.slice(0, -1).join('/');
+            } else {
+                upPath = '/' + path.join('/');
+            }
+        } else {
+            if (parent.show || parent.update || parent.patch || parent.destroy) {
+                upPath = '/' + path.join('/');
+            } else {
+                upPath = '/' + path.slice(0, -1).join('/');
+            }
+        }
+    }
 
     if (!singular) {
         hypermedia.collection = {
@@ -241,8 +260,8 @@ function generateHypermedia(name, path, singular) {
     if (resource.update) hypermedia.item.methods.push('put');
     if (resource.patch) hypermedia.item.methods.push('patch');
     if (resource.destroy) hypermedia.item.methods.push('delete');
-    hypermedia.item.links.self = { href: singular ? rootPath : itemPath };
-    hypermedia.item.links.up = { href: singular ? upPath : rootPath };
+    hypermedia.item.links.self = { href: (singular || (!resource.show && !resource.update && !resource.patch && !resource.destroy)) ? rootPath : itemPath };
+    hypermedia.item.links.up = { href: (singular || (!resource.index && !resource.create)) ? upPath : rootPath };
     if (resource.itemLinks) hypermedia.item.links = Hoek.merge(hypermedia.item.links, resource.itemLinks);
 
     if (hasOne.length) {
@@ -294,9 +313,10 @@ function generateRoute(name, method, singular, path) {
         } else {
             nextSegment = internals.resources[name].path.split('/');
         }
+        segments = segments.concat(nextSegment);
+    } else {
+        segments.push(nextSegment || name);
     }
-
-    segments.push(nextSegment || name);
 
     nextSegment = '';
     if (internals.uniqueIds === false) {
@@ -337,7 +357,7 @@ function addChild(parent, path, child, singular) {
         hasOneKeys = Object.keys(child[childName].hasOne);
         hasManyKeys = Object.keys(child[childName].hasMany);
         objectPath = generateRoute(childName, 'show', singular, path);
-        hypermedia = generateHypermedia(childName, path, singular);
+        hypermedia = generateHypermedia(childName, path, singular, parent);
 
         for (method in internals.resources[childName]) {
             if (!singular) {
