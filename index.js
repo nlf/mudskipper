@@ -197,7 +197,15 @@ function generateHypermedia(name, path, singular) {
         };
         Object.keys(internals.resources).forEach(function (key) {
             if (internals.resources[key].childOnly || key === 'root') return;
-            hypermedia.collection.links[key] = { href: '/' + key };
+            if (internals.resources[key].path) {
+                if (internals.resources[key].path.charAt(0) === '/') {
+                    hypermedia.collection.links[key] = { href: internals.resources[key].path };
+                } else {
+                    hypermedia.collection.links[key] = { href: '/' + internals.resources[key].path };
+                }
+            } else {
+                hypermedia.collection.links[key] = { href: '/' + key };
+            }
         });
         if (resource.collectionLinks) hypermedia.collection.links = Hoek.merge(hypermedia.collection.links, resource.collectionLinks);
         return hypermedia;
@@ -220,7 +228,7 @@ function generateHypermedia(name, path, singular) {
         if (resource.create) hypermedia.collection.methods.push('post');
         hypermedia.collection.links.self = { href: rootPath };
         hypermedia.collection.links.up = { href: upPath };
-        hypermedia.collection.links.item = { href: itemPath };
+        if (resource.show || resource.destroy || resource.update || resource.patch) hypermedia.collection.links.item = { href: itemPath };
         if (resource.collectionLinks) hypermedia.collection.links = Hoek.merge(hypermedia.collection.links, resource.collectionLinks);
     }
 
@@ -277,10 +285,14 @@ function generateRoute(name, method, singular, path) {
     }
 
     if (internals.resources[name].path) {
-        if (internals.resources[name].charAt(0) === '/') {
-            return internals.resources[name].path.slice(1).split('/');
+        if (internals.resources[name].path.charAt(0) === '/') {
+            if (method === 'index' || method === 'create') {
+                return internals.resources[name].path.slice(1).split('/');
+            } else {
+                nextSegment = internals.resources[name].path.slice(1).split('/');
+            }
         } else {
-            nextSegment = internals.resources[name].path;
+            nextSegment = internals.resources[name].path.split('/');
         }
     }
 

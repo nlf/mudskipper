@@ -56,6 +56,15 @@ internals.resources = {
         hasOne: ['users'],
         index: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'comments index' }); },
         destroy: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'comments destroy ' + request.params.comment_id }); }
+    },
+    bananas: {
+        hasMany: {
+            skins: {
+                index: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'skins index' }); }
+            }
+        },
+        path: '/banana',
+        show: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'bananas show ' + request.params.banana_id }); }
     }
 };
 
@@ -108,13 +117,14 @@ describe('root', function () {
         expect(hypermedia.methods).to.deep.equal(['get']);
 
         expect(hypermedia.links).to.be.an('object');
-        expect(hypermedia.links).to.have.keys('self', 'up', 'users', 'articles', 'comments', 'random');
+        expect(hypermedia.links).to.have.keys('self', 'up', 'users', 'articles', 'comments', 'random', 'bananas');
         expect(hypermedia.links.self).to.deep.equal({ href: '/notroot' });
         expect(hypermedia.links.up).to.deep.equal({ href: '/' });
         expect(hypermedia.links.users).to.deep.equal({ href: '/users' });
         expect(hypermedia.links.articles).to.deep.equal({ href: '/articles' });
         expect(hypermedia.links.comments).to.deep.equal({ href: '/comments' });
         expect(hypermedia.links.random).to.deep.equal({ href: '/thing' });
+        expect(hypermedia.links.bananas).to.deep.equal({ href: '/banana' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -764,5 +774,96 @@ describe('comments', function () {
 
             done();
         });
+    });
+});
+
+describe('bananas', function () {
+    var hypermedia;
+
+    it('registers base route', function (done) {
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/banana/{banana_id}');
+        });
+
+        expect(found).to.have.length(1);
+
+        done();
+    });
+
+    it('responds to show', function (done) {
+        server.inject({
+            method: 'get',
+            url: '/banana/5'
+        }, function (res) {
+            expect(res.statusCode).to.equal(200);
+            expect(res.result).to.be.an('object');
+            expect(res.result).to.have.keys('reply', 'hypermedia');
+            expect(res.result.reply).to.deep.equal('bananas show 5');
+            expect(res.result.hypermedia).to.be.an('object');
+            hypermedia = res.result.hypermedia;
+
+            done();
+        });
+    });
+
+    it('has correct show hypermedia', function (done) {
+        expect(hypermedia).to.have.keys('methods', 'links', 'items');
+
+        expect(hypermedia.methods).to.deep.equal(['get']);
+
+        expect(hypermedia.links).to.be.an('object');
+        expect(hypermedia.links).to.have.keys('self', 'up');
+        expect(hypermedia.links.self).to.deep.equal({ href: '/banana/{banana_id}' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/' });
+
+        expect(hypermedia.items).to.be.an('object');
+        expect(hypermedia.items).to.have.key('skins');
+        expect(hypermedia.items.skins).to.deep.equal({ href: '/banana/{banana_id}/skins', methods: ['get'] });
+
+        done();
+    });
+});
+
+describe('skins', function () {
+    var hypermedia;
+
+    it('registers the route', function (done) {
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/banana/{banana_id}/skins');
+        });
+
+        expect(found).to.have.length(1);
+
+        done();
+    });
+
+    it('responds to index', function (done) {
+        server.inject({
+            method: 'get',
+            url: '/banana/5/skins'
+        }, function (res) {
+            expect(res.statusCode).to.equal(200);
+            expect(res.result).to.be.an('object');
+            expect(res.result).to.have.keys('reply', 'hypermedia');
+            expect(res.result.reply).to.deep.equal('skins index');
+            expect(res.result.hypermedia).to.be.an('object');
+            hypermedia = res.result.hypermedia;
+
+            done();
+        });
+    });
+
+    it('has correct index hypermedia', function (done) {
+        expect(hypermedia).to.have.keys('methods', 'links', 'items');
+
+        expect(hypermedia.methods).to.deep.equal(['get']);
+
+        expect(hypermedia.links).to.be.an('object');
+        expect(hypermedia.links).to.have.keys('self', 'up');
+        expect(hypermedia.links.self).to.deep.equal({ href: '/banana/{banana_id}/skins' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/banana/{banana_id}' });
+
+        expect(hypermedia.items).to.deep.equal({});
+        done();
     });
 });
