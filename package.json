@@ -1,6 +1,6 @@
 {
   "name": "mudskipper",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "a resourceful routing plugin for hapi",
   "main": "index.js",
   "scripts": {
@@ -21,13 +21,15 @@
   "bugs": {
     "url": "https://github.com/nlf/mudskipper/issues"
   },
+  "peerDependencies": {
+    "hapi": "2.x.x"
+  },
   "dependencies": {
-    "hoek": "~0.9.1",
-    "inflection": "~1.2.6",
-    "async": "~0.2.9"
+    "hoek": "~1.4.1",
+    "inflection": "~1.3.2"
   },
   "devDependencies": {
-    "hapi": "~1.20.0",
+    "hapi": "~2.0.0",
     "lab": "~0.1.4",
     "complexity-report": "~0.10.3",
     "precommit-hook": "~0.3.5"

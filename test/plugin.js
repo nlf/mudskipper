@@ -13,7 +13,7 @@ var it = Lab.test;
 
 internals.resources = {
     root: {
-        handler: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'root' }); },
+        handler: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'root' }); },
         collectionLinks: { self: { href: '/notroot' }, random: { href: '/thing' } }
     },
     users: {
@@ -24,9 +24,9 @@ internals.resources = {
             articles: { href: '/articles' }
         },
         hasMany: ['articles', 'comments'],
-        index: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'users index' }); },
+        index: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'users index' }); },
         show: {
-            handler: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'users show ' + (request.params.user_id || '5') }); },
+            handler: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'users show ' + (request.params.user_id || '5') }); },
             config: {
                 validate: {
                     path: {
@@ -39,10 +39,10 @@ internals.resources = {
     articles: {
         hasOne: 'users',
         hasMany: 'comments',
-        index: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'articles index' }); },
-        show: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'articles show ' + request.params.article_id }); },
+        index: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'articles index' }); },
+        show: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'articles show ' + request.params.article_id }); },
         create: {
-            handler: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'articles create ' + request.payload.title }).code(201); },
+            handler: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'articles create ' + request.payload.title }).code(201); },
             config: {
                 validate: {
                     payload: {
@@ -54,17 +54,17 @@ internals.resources = {
     },
     comments: {
         hasOne: ['users'],
-        index: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'comments index' }); },
-        destroy: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'comments destroy ' + request.params.comment_id }); }
+        index: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'comments index' }); },
+        destroy: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'comments destroy ' + request.params.comment_id }); }
     },
     bananas: {
         hasMany: {
             skins: {
-                index: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'skins index' }); }
+                index: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'skins index' }); }
             }
         },
         path: '/banana',
-        show: function (request) { request.reply({ hypermedia: request.route.context.hypermedia, reply: 'bananas show ' + request.params.banana_id }); }
+        show: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'bananas show ' + request.params.banana_id }); }
     }
 };
 
@@ -75,7 +75,7 @@ describe('plugin', function () {
         server = new Hapi.Server();
         server.pack.require('../', internals, function (err) {
             expect(err).to.not.exist;
-            table = server.routingTable();
+            table = server.table();
 
             done();
         });

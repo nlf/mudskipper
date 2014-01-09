@@ -12,40 +12,37 @@ var internals = {
         index: {
             method: 'get',
             config: {
-                context: {}
+                bind: {}
             }
         },
         show: {
             method: 'get',
             config: {
-                context: {}
+                bind: {}
             }
         },
         create: {
             method: 'post',
             config: {
-                payload: 'parse',
-                context: {}
+                bind: {}
             }
         },
         update: {
             method: 'put',
             config: {
-                payload: 'parse',
-                context: {}
+                bind: {}
             }
         },
         patch: {
             method: 'patch',
             config: {
-                payload: 'parse',
-                context: {}
+                bind: {}
             }
         },
         destroy: {
             method: 'delete',
             config: {
-                context: {}
+                bind: {}
             }
         }
     }
@@ -117,7 +114,7 @@ function secondPass() {
             if (typeof resource === 'function') resource = { handler: resource };
             settings = Hoek.applyToDefaults(internals.defaults.index, resource);
             settings.path = '/';
-            settings.config.context.hypermedia = hypermedia.collection;
+            settings.config.bind.hypermedia = hypermedia.collection;
             delete settings.collectionLinks;
             delete settings.itemLinks;
             internals.routes.push(settings);
@@ -139,9 +136,9 @@ function secondPass() {
             if (settings.config && settings.config.validate && settings.config.validate.path) delete settings.config.validate.path;
             settings.path = '/' + generateRoute(key, method, false, []).join('/');
             if (method === 'index') {
-                settings.config.context.hypermedia = hypermedia.collection;
+                settings.config.bind.hypermedia = hypermedia.collection;
             } else if (method === 'show') {
-                settings.config.context.hypermedia = hypermedia.item;
+                settings.config.bind.hypermedia = hypermedia.item;
             }
             delete settings.itemLinks;
             delete settings.collectionLinks;
@@ -374,9 +371,9 @@ function addChild(parent, path, child, singular) {
 
             route.path = '/' + generateRoute(childName, method, singular, path).join('/');
             if (method === 'index') {
-                route.config.context.hypermedia = hypermedia.collection;
+                route.config.bind.hypermedia = hypermedia.collection;
             } else if (method === 'show') {
-                route.config.context.hypermedia = hypermedia.item;
+                route.config.bind.hypermedia = hypermedia.item;
             }
             delete route.itemLinks;
             delete route.collectionLinks;
