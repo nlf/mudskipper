@@ -8,6 +8,7 @@ var internals = {
     resources: {},
     dependencies: {},
     options: {},
+    namespace: '',
     defaults: {
         index: {
             method: 'get',
@@ -113,7 +114,7 @@ function secondPass() {
         if (key === 'root') {
             if (typeof resource === 'function') resource = { handler: resource };
             settings = Hoek.applyToDefaults(internals.defaults.index, resource);
-            settings.path = '/';
+            settings.path = '/' + (internals.namespace ? internals.namespace : '');
             settings.config.bind.hypermedia = hypermedia.collection;
             delete settings.collectionLinks;
             delete settings.itemLinks;
@@ -185,23 +186,39 @@ function findChildren(parent, children, parents) {
 function generateHypermedia(name, path, singular, parent) {
     var resource = internals.resources[name];
     var hypermedia = {};
+    var newpath;
 
     if (name === 'root') {
+        if (internals.namespace) {
+            newpath = '/' + internals.namespace;
+        } else {
+            newpath = '/';
+        }
+
         hypermedia.collection = {
             methods: ['get'],
-            links: { self: { href: '/' }, up: { href: '/' } },
+            links: { self: { href: newpath }, up: { href: newpath } },
             items: {}
         };
+
         Object.keys(internals.resources).forEach(function (key) {
             if (internals.resources[key].childOnly || key === 'root') return;
             if (internals.resources[key].path) {
-                if (internals.resources[key].path.charAt(0) === '/') {
-                    hypermedia.collection.links[key] = { href: internals.resources[key].path };
+                newpath = internals.resources[key].path;
+                if (internals.resources[key].path[0] === '/') {
+                    hypermedia.collection.links[key] = { href: newpath };
                 } else {
-                    hypermedia.collection.links[key] = { href: '/' + internals.resources[key].path };
+                    if (internals.namespace) {
+                        newpath = '/' + internals.namespace + '/' + newpath;
+                    }
+                    hypermedia.collection.links[key] = { href: newpath };
                 }
             } else {
-                hypermedia.collection.links[key] = { href: '/' + key };
+                newpath = '/' + key;
+                if (internals.namespace) {
+                    newpath = '/' + internals.namespace + newpath;
+                }
+                hypermedia.collection.links[key] = { href: newpath };
             }
         });
         if (resource.collectionLinks) hypermedia.collection.links = Hoek.merge(hypermedia.collection.links, resource.collectionLinks);
@@ -215,7 +232,11 @@ function generateHypermedia(name, path, singular, parent) {
     var href, methods, upPath, singularParent;
 
     if (!parent) {
-        upPath = '/';
+        if (internals.namespace) {
+            upPath = '/' + internals.namespace;
+        } else {
+            upPath = '/';
+        }
     } else {
         singularParent = path[path.length - 1].indexOf('{') === -1;
 
@@ -293,7 +314,18 @@ function generateHypermedia(name, path, singular, parent) {
 }
 
 function generateRoute(name, method, singular, path) {
-    var segments = [].concat(path);
+    var segments;
+
+    if (path.length) {
+        segments = [].concat(path);
+    } else {
+        if (internals.namespace && (!internals.resources[name].path || internals.resources[name].path[0] !== '/')) {
+            segments = [internals.namespace];
+        } else {
+            segments = [];
+        }
+    }
+
     var nextSegment = '';
 
     if (singular) {
@@ -301,7 +333,7 @@ function generateRoute(name, method, singular, path) {
     }
 
     if (internals.resources[name].path) {
-        if (internals.resources[name].path.charAt(0) === '/') {
+        if (internals.resources[name].path[0] === '/') {
             if (method === 'index' || method === 'create') {
                 return internals.resources[name].path.slice(1).split('/');
             } else {
@@ -388,10 +420,12 @@ function addChild(parent, path, child, singular) {
 exports.register = function _register(plugin, options, next) {
     Hoek.assert(typeof options === 'object', 'Options must be defined as an object');
     Hoek.assert(options.resources, 'Options must contain a resources key');
+    Hoek.assert(options.hasOwnProperty('namespace') ? typeof options.namespace === 'string' : true, 'Namespace must be a string');
 
     internals.plugin = plugin;
     internals.options = options.resources;
     internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
+    internals.namespace = options.hasOwnProperty('namespace') ? options.namespace : '';
     firstPass();
     next();
 };

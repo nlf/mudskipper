@@ -11,6 +11,7 @@ var after = Lab.after;
 var describe = Lab.experiment;
 var it = Lab.test;
 
+internals.namespace = 'api';
 internals.resources = {
     root: {
         handler: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'root' }); },
@@ -21,7 +22,7 @@ internals.resources = {
             thing: { href: '/thing' }
         },
         collectionLinks: {
-            articles: { href: '/articles' }
+            articles: { href: '/api/articles' }
         },
         hasMany: ['articles', 'comments'],
         index: function (request, reply) { reply({ hypermedia: request.route.bind.hypermedia, reply: 'users index' }); },
@@ -87,7 +88,7 @@ describe('root', function () {
 
     it('registers a route', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/');
+            return (route.method === 'get' && route.path === '/api');
         });
 
         expect(found).to.have.length(1);
@@ -98,7 +99,7 @@ describe('root', function () {
     it('responds to index', function (done) {
         server.inject({
             method: 'get',
-            url: '/'
+            url: '/api'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -119,10 +120,10 @@ describe('root', function () {
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'users', 'articles', 'comments', 'random', 'bananas');
         expect(hypermedia.links.self).to.deep.equal({ href: '/notroot' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/' });
-        expect(hypermedia.links.users).to.deep.equal({ href: '/users' });
-        expect(hypermedia.links.articles).to.deep.equal({ href: '/articles' });
-        expect(hypermedia.links.comments).to.deep.equal({ href: '/comments' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api' });
+        expect(hypermedia.links.users).to.deep.equal({ href: '/api/users' });
+        expect(hypermedia.links.articles).to.deep.equal({ href: '/api/articles' });
+        expect(hypermedia.links.comments).to.deep.equal({ href: '/api/comments' });
         expect(hypermedia.links.random).to.deep.equal({ href: '/thing' });
         expect(hypermedia.links.bananas).to.deep.equal({ href: '/banana' });
 
@@ -137,8 +138,8 @@ describe('users', function () {
 
     it('registers base routes', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/users') ||
-                (route.method === 'get' && route.path === '/users/{user_id}');
+            return (route.method === 'get' && route.path === '/api/users') ||
+                (route.method === 'get' && route.path === '/api/users/{user_id}');
         });
 
         expect(found).to.have.length(2);
@@ -148,9 +149,9 @@ describe('users', function () {
 
     it('registers nested routes', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/articles/{article_id}/user') ||
-                (route.method === 'get' && route.path === '/articles/{article_id}/comments/{comment_id}/user') ||
-                (route.method === 'get' && route.path === '/comments/{comment_id}/user');
+            return (route.method === 'get' && route.path === '/api/articles/{article_id}/user') ||
+                (route.method === 'get' && route.path === '/api/articles/{article_id}/comments/{comment_id}/user') ||
+                (route.method === 'get' && route.path === '/api/comments/{comment_id}/user');
         });
 
         expect(found).to.have.length(3);
@@ -161,7 +162,7 @@ describe('users', function () {
     it('responds to index', function (done) {
         server.inject({
             method: 'get',
-            url: '/users'
+            url: '/api/users'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -181,10 +182,10 @@ describe('users', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item', 'articles');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/users' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/users/{user_id}' });
-        expect(hypermedia.links.articles).to.deep.equal({ href: '/articles' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/users' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/users/{user_id}' });
+        expect(hypermedia.links.articles).to.deep.equal({ href: '/api/articles' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -194,7 +195,7 @@ describe('users', function () {
     it('responds to show', function (done) {
         server.inject({
             method: 'get',
-            url: '/users/5'
+            url: '/api/users/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -214,14 +215,14 @@ describe('users', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'thing');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/users/{user_id}' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/users' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/users/{user_id}' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/users' });
         expect(hypermedia.links.thing).to.deep.equal({ href: '/thing' });
 
         expect(hypermedia.items).to.be.an('object');
         expect(hypermedia.items).to.have.keys('articles', 'comments');
-        expect(hypermedia.items.articles).to.deep.equal({ href: '/users/{user_id}/articles', methods: ['get', 'post'] });
-        expect(hypermedia.items.comments).to.deep.equal({ href: '/users/{user_id}/comments', methods: ['get'] });
+        expect(hypermedia.items.articles).to.deep.equal({ href: '/api/users/{user_id}/articles', methods: ['get', 'post'] });
+        expect(hypermedia.items.comments).to.deep.equal({ href: '/api/users/{user_id}/comments', methods: ['get'] });
 
         done();
     });
@@ -229,7 +230,7 @@ describe('users', function () {
     it('responds to show nested on articles', function (done) {
         server.inject({
             method: 'get',
-            url: '/articles/5/user'
+            url: '/api/articles/5/user'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.have.keys('reply', 'hypermedia');
@@ -247,12 +248,12 @@ describe('users', function () {
         expect(hypermedia.methods).to.deep.equal(['get']);
 
         expect(hypermedia.links).to.have.keys('self', 'up', 'thing');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/articles/{article_id}/user' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/articles/{article_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/articles/{article_id}/user' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/articles/{article_id}' });
         expect(hypermedia.links.thing).to.deep.equal({ href: '/thing' });
 
         expect(hypermedia.items).to.have.key('comments');
-        expect(hypermedia.items.comments).to.deep.equal({ href: '/articles/{article_id}/user/comments', methods: ['get'] });
+        expect(hypermedia.items.comments).to.deep.equal({ href: '/api/articles/{article_id}/user/comments', methods: ['get'] });
 
         done();
     });
@@ -260,7 +261,7 @@ describe('users', function () {
     it('responds to show nested on comments', function (done) {
         server.inject({
             method: 'get',
-            url: '/comments/5/user'
+            url: '/api/comments/5/user'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.have.keys('reply', 'hypermedia');
@@ -278,12 +279,12 @@ describe('users', function () {
         expect(hypermedia.methods).to.deep.equal(['get']);
 
         expect(hypermedia.links).to.have.keys('self', 'up', 'thing');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/comments/{comment_id}/user' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/comments/{comment_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/comments/{comment_id}/user' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/comments/{comment_id}' });
         expect(hypermedia.links.thing).to.deep.equal({ href: '/thing' });
 
         expect(hypermedia.items).to.have.key('articles');
-        expect(hypermedia.items.articles).to.deep.equal({ href: '/comments/{comment_id}/user/articles', methods: ['get', 'post'] });
+        expect(hypermedia.items.articles).to.deep.equal({ href: '/api/comments/{comment_id}/user/articles', methods: ['get', 'post'] });
 
         done();
     });
@@ -294,9 +295,9 @@ describe('articles', function () {
 
     it('registers base routes', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/articles') ||
-                (route.method === 'get' && route.path === '/articles/{article_id}') ||
-                (route.method === 'post' && route.path === '/articles');
+            return (route.method === 'get' && route.path === '/api/articles') ||
+                (route.method === 'get' && route.path === '/api/articles/{article_id}') ||
+                (route.method === 'post' && route.path === '/api/articles');
         });
 
         expect(found).to.have.length(3);
@@ -306,12 +307,12 @@ describe('articles', function () {
 
     it('registers nested routes', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/users/{user_id}/articles') ||
-                (route.method === 'get' && route.path === '/users/{user_id}/articles/{article_id}') ||
-                (route.method === 'post' && route.path === '/users/{user_id}/articles') ||
-                (route.method === 'get' && route.path === '/comments/{comment_id}/user/articles') ||
-                (route.method === 'get' && route.path === '/comments/{comment_id}/user/articles/{article_id}') ||
-                (route.method === 'post' && route.path === '/comments/{comment_id}/user/articles');
+            return (route.method === 'get' && route.path === '/api/users/{user_id}/articles') ||
+                (route.method === 'get' && route.path === '/api/users/{user_id}/articles/{article_id}') ||
+                (route.method === 'post' && route.path === '/api/users/{user_id}/articles') ||
+                (route.method === 'get' && route.path === '/api/comments/{comment_id}/user/articles') ||
+                (route.method === 'get' && route.path === '/api/comments/{comment_id}/user/articles/{article_id}') ||
+                (route.method === 'post' && route.path === '/api/comments/{comment_id}/user/articles');
         });
 
         expect(found).to.have.length(6);
@@ -322,7 +323,7 @@ describe('articles', function () {
     it('responds to index', function (done) {
         server.inject({
             method: 'get',
-            url: '/articles'
+            url: '/api/articles'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.have.keys('reply', 'hypermedia');
@@ -341,9 +342,9 @@ describe('articles', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/articles' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/articles/{article_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/articles' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/articles/{article_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -353,7 +354,7 @@ describe('articles', function () {
     it('responds to show', function (done) {
         server.inject({
             method: 'get',
-            url: '/articles/5'
+            url: '/api/articles/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -373,13 +374,13 @@ describe('articles', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/articles/{article_id}' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/articles' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/articles/{article_id}' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/articles' });
 
         expect(hypermedia.items).to.be.an('object');
         expect(hypermedia.items).to.have.keys('user', 'comments');
-        expect(hypermedia.items.user).to.deep.equal({ href: '/articles/{article_id}/user', methods: ['get'] });
-        expect(hypermedia.items.comments).to.deep.equal({ href: '/articles/{article_id}/comments', methods: ['get'] });
+        expect(hypermedia.items.user).to.deep.equal({ href: '/api/articles/{article_id}/user', methods: ['get'] });
+        expect(hypermedia.items.comments).to.deep.equal({ href: '/api/articles/{article_id}/comments', methods: ['get'] });
 
         done();
     });
@@ -387,7 +388,7 @@ describe('articles', function () {
     it('responds to create', function (done) {
         server.inject({
             method: 'post',
-            url: '/articles',
+            url: '/api/articles',
             payload: { title: 'test' }
         }, function (res) {
             expect(res.statusCode).to.equal(201);
@@ -403,7 +404,7 @@ describe('articles', function () {
     it('responds to index nested on users', function (done) {
         server.inject({
             method: 'get',
-            url: '/users/5/articles'
+            url: '/api/users/5/articles'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.have.keys('reply', 'hypermedia');
@@ -422,9 +423,9 @@ describe('articles', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/users/{user_id}/articles' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/users/{user_id}' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/users/{user_id}/articles/{article_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/users/{user_id}/articles' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/users/{user_id}' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/users/{user_id}/articles/{article_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -434,7 +435,7 @@ describe('articles', function () {
     it('responds to index nested on user nested on comments', function (done) {
         server.inject({
             method: 'get',
-            url: '/comments/5/user/articles'
+            url: '/api/comments/5/user/articles'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.have.keys('reply', 'hypermedia');
@@ -453,9 +454,9 @@ describe('articles', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/comments/{comment_id}/user/articles' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/comments/{comment_id}/user' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/comments/{comment_id}/user/articles/{article_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/comments/{comment_id}/user/articles' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/comments/{comment_id}/user' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/comments/{comment_id}/user/articles/{article_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -465,7 +466,7 @@ describe('articles', function () {
     it('responds to show nested on users', function (done) {
         server.inject({
             method: 'get',
-            url: '/users/5/articles/5'
+            url: '/api/users/5/articles/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -485,12 +486,12 @@ describe('articles', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/users/{user_id}/articles/{article_id}' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/users/{user_id}/articles' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/users/{user_id}/articles/{article_id}' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/users/{user_id}/articles' });
 
         expect(hypermedia.items).to.be.an('object');
         expect(hypermedia.items).to.have.keys('comments');
-        expect(hypermedia.items.comments).to.deep.equal({ href: '/users/{user_id}/articles/{article_id}/comments', methods: ['get'] });
+        expect(hypermedia.items.comments).to.deep.equal({ href: '/api/users/{user_id}/articles/{article_id}/comments', methods: ['get'] });
 
         done();
     });
@@ -498,7 +499,7 @@ describe('articles', function () {
     it('responds to show nested on user nested on comments', function (done) {
         server.inject({
             method: 'get',
-            url: '/comments/5/user/articles/5'
+            url: '/api/comments/5/user/articles/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -518,8 +519,8 @@ describe('articles', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/comments/{comment_id}/user/articles/{article_id}' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/comments/{comment_id}/user/articles' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/comments/{comment_id}/user/articles/{article_id}' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/comments/{comment_id}/user/articles' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -529,7 +530,7 @@ describe('articles', function () {
     it('responds to create nested on users', function (done) {
         server.inject({
             method: 'post',
-            url: '/users/5/articles',
+            url: '/api/users/5/articles',
             payload: { title: 'test' }
         }, function (res) {
             expect(res.statusCode).to.equal(201);
@@ -545,7 +546,7 @@ describe('articles', function () {
     it('responds to create nested on user nested on comments', function (done) {
         server.inject({
             method: 'post',
-            url: '/comments/5/user/articles',
+            url: '/api/comments/5/user/articles',
             payload: { title: 'test' }
         }, function (res) {
             expect(res.statusCode).to.equal(201);
@@ -564,8 +565,8 @@ describe('comments', function () {
 
     it('registers base routes', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/comments') ||
-                (route.method === 'delete' && route.path === '/comments/{comment_id}');
+            return (route.method === 'get' && route.path === '/api/comments') ||
+                (route.method === 'delete' && route.path === '/api/comments/{comment_id}');
         });
 
         expect(found).to.have.length(2);
@@ -575,12 +576,12 @@ describe('comments', function () {
 
     it('registers nested routes', function (done) {
         var found = table.filter(function (route) {
-            return (route.method === 'get' && route.path === '/users/{user_id}/comments') ||
-                (route.method === 'delete' && route.path === '/users/{user_id}/comments/{comment_id}') ||
-                (route.method === 'get' && route.path === '/articles/{article_id}/comments') ||
-                (route.method === 'delete' && route.path === '/articles/{article_id}/comments/{comment_id}') ||
-                (route.method === 'get' && route.path === '/articles/{article_id}/user/comments') ||
-                (route.method === 'delete' && route.path === '/articles/{article_id}/user/comments/{comment_id}');
+            return (route.method === 'get' && route.path === '/api/users/{user_id}/comments') ||
+                (route.method === 'delete' && route.path === '/api/users/{user_id}/comments/{comment_id}') ||
+                (route.method === 'get' && route.path === '/api/articles/{article_id}/comments') ||
+                (route.method === 'delete' && route.path === '/api/articles/{article_id}/comments/{comment_id}') ||
+                (route.method === 'get' && route.path === '/api/articles/{article_id}/user/comments') ||
+                (route.method === 'delete' && route.path === '/api/articles/{article_id}/user/comments/{comment_id}');
         });
 
         expect(found).to.have.length(6);
@@ -591,7 +592,7 @@ describe('comments', function () {
     it('responds to index', function (done) {
         server.inject({
             method: 'get',
-            url: '/comments'
+            url: '/api/comments'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -611,9 +612,9 @@ describe('comments', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/comments' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/comments/{comment_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/comments' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/comments/{comment_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -623,7 +624,7 @@ describe('comments', function () {
     it('responds to destroy', function (done) {
         server.inject({
             method: 'delete',
-            url: '/comments/5'
+            url: '/api/comments/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -638,7 +639,7 @@ describe('comments', function () {
     it('responds to index nested on users', function (done) {
         server.inject({
             method: 'get',
-            url: '/users/5/comments'
+            url: '/api/users/5/comments'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -658,9 +659,9 @@ describe('comments', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/users/{user_id}/comments' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/users/{user_id}' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/users/{user_id}/comments/{comment_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/users/{user_id}/comments' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/users/{user_id}' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/users/{user_id}/comments/{comment_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -670,7 +671,7 @@ describe('comments', function () {
     it('responds to index nested on articles', function (done) {
         server.inject({
             method: 'get',
-            url: '/articles/5/comments'
+            url: '/api/articles/5/comments'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -690,9 +691,9 @@ describe('comments', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/articles/{article_id}/comments' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/articles/{article_id}' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/articles/{article_id}/comments/{comment_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/articles/{article_id}/comments' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/articles/{article_id}' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/articles/{article_id}/comments/{comment_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -702,7 +703,7 @@ describe('comments', function () {
     it('responds to index nested on user nested on articles', function (done) {
         server.inject({
             method: 'get',
-            url: '/articles/5/user/comments'
+            url: '/api/articles/5/user/comments'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -722,9 +723,9 @@ describe('comments', function () {
 
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up', 'item');
-        expect(hypermedia.links.self).to.deep.equal({ href: '/articles/{article_id}/user/comments' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/articles/{article_id}/user' });
-        expect(hypermedia.links.item).to.deep.equal({ href: '/articles/{article_id}/user/comments/{comment_id}' });
+        expect(hypermedia.links.self).to.deep.equal({ href: '/api/articles/{article_id}/user/comments' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api/articles/{article_id}/user' });
+        expect(hypermedia.links.item).to.deep.equal({ href: '/api/articles/{article_id}/user/comments/{comment_id}' });
 
         expect(hypermedia.items).to.deep.equal({});
 
@@ -734,7 +735,7 @@ describe('comments', function () {
     it('responds to destroy nested on users', function (done) {
         server.inject({
             method: 'delete',
-            url: '/users/5/comments/5'
+            url: '/api/users/5/comments/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -749,7 +750,7 @@ describe('comments', function () {
     it('responds to destroy nested on articles', function (done) {
         server.inject({
             method: 'delete',
-            url: '/articles/5/comments/5'
+            url: '/api/articles/5/comments/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -764,7 +765,7 @@ describe('comments', function () {
     it('responds to destroy nested on user nested on articles', function (done) {
         server.inject({
             method: 'delete',
-            url: '/articles/5/user/comments/5'
+            url: '/api/articles/5/user/comments/5'
         }, function (res) {
             expect(res.statusCode).to.equal(200);
             expect(res.result).to.be.an('object');
@@ -814,7 +815,7 @@ describe('bananas', function () {
         expect(hypermedia.links).to.be.an('object');
         expect(hypermedia.links).to.have.keys('self', 'up');
         expect(hypermedia.links.self).to.deep.equal({ href: '/banana/{banana_id}' });
-        expect(hypermedia.links.up).to.deep.equal({ href: '/' });
+        expect(hypermedia.links.up).to.deep.equal({ href: '/api' });
 
         expect(hypermedia.items).to.be.an('object');
         expect(hypermedia.items).to.have.key('skins');
