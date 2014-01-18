@@ -156,6 +156,14 @@ function secondPass() {
     }
 
     internals.plugin.route(internals.routes);
+
+    // reset internals
+    internals.hypermedia = {};
+    internals.routes = [];
+    internals.resources = {};
+    internals.dependencies = {};
+    internals.options = {};
+    internals.namespace = '';
 }
 
 // a helper function to recursively find children from a given parent
@@ -417,15 +425,20 @@ function addChild(parent, path, child, singular) {
     }
 }
 
-exports.register = function _register(plugin, options, next) {
+function buildRoutes(options, next) {
     Hoek.assert(typeof options === 'object', 'Options must be defined as an object');
     Hoek.assert(options.resources, 'Options must contain a resources key');
     Hoek.assert(options.hasOwnProperty('namespace') ? typeof options.namespace === 'string' : true, 'Namespace must be a string');
 
-    internals.plugin = plugin;
     internals.options = options.resources;
     internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
     internals.namespace = options.hasOwnProperty('namespace') ? options.namespace : '';
     firstPass();
     next();
+}
+
+exports.register = function (plugin, options, next) {
+    internals.plugin = plugin;
+    plugin.expose({ route: buildRoutes });
+    buildRoutes(options, next);
 };

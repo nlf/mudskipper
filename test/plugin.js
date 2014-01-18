@@ -69,6 +69,16 @@ internals.resources = {
     }
 };
 
+var internals_add = {
+    resources: {
+        tests: {
+            index: function (request, reply) {
+                reply('ok');
+            }
+        }
+    }
+};
+
 var server, table;
 
 describe('plugin', function () {
@@ -76,8 +86,14 @@ describe('plugin', function () {
         server = new Hapi.Server();
         server.pack.require('../', internals, function (err) {
             expect(err).to.not.exist;
-            table = server.table();
 
+            done();
+        });
+    });
+
+    it('can add more routes after being loaded', function (done) {
+        server.plugins.mudskipper.route(internals_add, function () {
+            table = server.table();
             done();
         });
     });
@@ -85,6 +101,16 @@ describe('plugin', function () {
 
 describe('root', function () {
     var hypermedia;
+
+    it('registered the additional route', function (done) {
+        var found = table.filter(function (route) {
+            return (route.method === 'get' && route.path === '/tests');
+        });
+
+        expect(found).to.have.length(1);
+
+        done();
+    });
 
     it('registers a route', function (done) {
         var found = table.filter(function (route) {
