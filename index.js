@@ -427,19 +427,20 @@ function addChild(parent, path, child, singular) {
 
 function buildRoutes(options, next) {
     Hoek.assert(typeof options === 'object', 'Options must be defined as an object');
-    Hoek.assert(options.resources, 'Options must contain a resources key');
     Hoek.assert(options.hasOwnProperty('namespace') ? typeof options.namespace === 'string' : true, 'Namespace must be a string');
 
     internals.options = options.resources;
     internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
     internals.namespace = options.hasOwnProperty('namespace') ? options.namespace : '';
-    firstPass();
+    if (Object.keys(internals.options).length) {
+        firstPass();
+    }
     next();
 }
 
 exports.register = function (plugin, options, next) {
     internals.plugin = plugin;
-    options = options || { resources: { } };
+    options.resources = options.resources || {};
     plugin.expose({ route: buildRoutes });
     buildRoutes(options, next);
 };
