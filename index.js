@@ -439,6 +439,7 @@ function buildRoutes(options, next) {
 
 exports.register = function (plugin, options, next) {
     internals.plugin = plugin;
+    options = options || { resources: { } };
     plugin.expose({ route: buildRoutes });
     buildRoutes(options, next);
 };
