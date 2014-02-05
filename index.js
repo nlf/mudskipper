@@ -432,7 +432,7 @@ function buildRoutes(options, next) {
     internals.options = options.resources;
     internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
     internals.namespace = options.hasOwnProperty('namespace') ? options.namespace : '';
-    if (Object.keys(internals.options).length) {
+    if (internals.options && Object.keys(internals.options).length) {
         firstPass();
     }
     next();
