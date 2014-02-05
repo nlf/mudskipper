@@ -155,7 +155,7 @@ function secondPass() {
         }
     }
 
-    internals.plugin.route(internals.routes);
+    internals.servers.route(internals.routes);
 
     // reset internals
     internals.hypermedia = {};
@@ -428,6 +428,9 @@ function addChild(parent, path, child, singular) {
 function buildRoutes(options, next) {
     Hoek.assert(typeof options === 'object', 'Options must be defined as an object');
     Hoek.assert(options.hasOwnProperty('namespace') ? typeof options.namespace === 'string' : true, 'Namespace must be a string');
+    Hoek.assert(options.hasOwnProperty('labels') ? Array.isArray(options.labels) : true, 'Labels must be an array');
+
+    internals.servers = options.labels ? internals.plugin.select(options.labels) : internals.plugin;
 
     internals.options = options.resources;
     internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
