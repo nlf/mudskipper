@@ -1,5 +1,6 @@
 var Lab = require('lab');
 var Hapi = require('hapi');
+var Joi = require('joi');
 
 // Declare internals
 var internals = {};
@@ -31,7 +32,7 @@ internals.resources = {
             config: {
                 validate: {
                     path: {
-                        user_id: Hapi.types.Number()
+                        user_id: Joi.number()
                     }
                 }
             }
@@ -47,7 +48,7 @@ internals.resources = {
             config: {
                 validate: {
                     payload: {
-                        title: Hapi.types.String()
+                        title: Joi.string()
                     }
                 }
             }
