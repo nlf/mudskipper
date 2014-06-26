@@ -447,3 +447,7 @@ exports.register = function (plugin, options, next) {
     plugin.expose({ route: buildRoutes });
     buildRoutes(options, next);
 };
+
+exports.register.attributes = {
+    pkg: require('./package.json');
+};
