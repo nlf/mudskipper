@@ -17,15 +17,20 @@ var resources = {
 }
 
 var server = new Hapi.Server();
-server.pack.require('mudskipper', resources, function (err) {
-    if (err) console.error('failed to load resourceful routes:', err);
+server.register({
+    register: require('mudskipper'),
+    options: resources
+}, function (err) {
+    if (err) {
+        console.error('failed to load resourceful routes:', err);
+    }
 });
 ```
 
 The above example would create routes for
 ```
 GET /users
-GET /users/{user_id}
+GET /users/{userId}
 ```
 
 You'll notice that here, we only supplied functions for the methods. This causes the function to be used as the handler for the route, and defaults applied to the other values. Alternatively, methods can be defined as an object containing anything that's available as part of a route. For example:
@@ -58,7 +63,7 @@ articles: {
     }
 }
 ```
-Would create the index route at the path ```/test```. If the articles resource were specified as a child of another resource, the path would be changed to ```/parent/{parent_id}/test```
+Would create the index route at the path ```/test```. If the articles resource were specified as a child of another resource, the path would be changed to ```/parent/{parentId}/test```
 
 If the path is specified without a leading /, such as
 ```javascript
@@ -68,7 +73,7 @@ articles: {
     }
 }
 ```
-Then the index route would be added at the path ```/articles/test``` and the nested resource would become ```/parent/{parent_id}/articles/test```
+Then the index route would be added at the path ```/articles/test``` and the nested resource would become ```/parent/{parentId}/articles/test```
 
 Nested resources can be created by using the 'hasOne' or 'hasMany' fields. Circular dependencies are handled appropriately.
 ```javascript
@@ -110,23 +115,23 @@ var resources = {
  - path: '/{name}'
 * show
  - method: 'get'
- - path: '/{name}/{name_id}
+ - path: '/{name}/{nameId}
 * create
  - method: 'post'
  - path: '/{name}'
  - payload: 'parse'
 * update
  - method: 'put'
- - path: '/{name}/{name_id}
+ - path: '/{name}/{nameId}
  - payload: 'parse'
 * patch
  - method: 'patch'
- - path: '/{name}/{name_id}
+ - path: '/{name}/{nameId}
  - payload: 'parse'
 * destroy
  - method: 'delete'
- - path: '/{name}/{name_id}
+ - path: '/{name}/{nameId}
 
-Note that 'name' is whatever key is found in the resources object (in the above examples, it would be 'users'). name_id will be that name, after an attempt to singularize, and the literal string '_id' appended to it (the above examples would yield user_id).
+Note that 'name' is whatever key is found in the resources object (in the above examples, it would be 'users'). nameId will be that name, after an attempt to singularize, and the literal string 'Id' appended to it (the above examples would yield userId).
 
-Additionally, you can specify a top level option ```uniqueIds: false``` and ids will be created such as /name/{id}/subname/{sub_id} rather than attempting to singularize name and subname.
+Additionally, you can specify a top level option ```uniqueIds: false``` and ids will be created such as /name/{id}/subname/{subId} rather than attempting to singularize name and subname.
