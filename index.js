@@ -291,9 +291,7 @@ Mudskipper.prototype.addChild = function _addChild(parent, path, child, singular
 Mudskipper.prototype.buildRoutes = function _buildRoutes(options, next) {
     Hoek.assert(typeof options === 'object', 'Options must be defined as an object');
     Hoek.assert(options.hasOwnProperty('namespace') ? typeof options.namespace === 'string' : true, 'Namespace must be a string');
-    Hoek.assert(options.hasOwnProperty('labels') ? Array.isArray(options.labels) : true, 'Labels must be an array');
 
-    internals.servers = options.labels ? internals.plugin.select(options.labels) : internals.plugin;
 
     this.internals.options = options.resources;
     this.internals.uniqueIds = options.hasOwnProperty('uniqueIds') ? options.uniqueIds : true;
@@ -315,6 +313,6 @@ module.exports.register = function (plugin, options, next) {
     mudskipper.buildRoutes(options, next);
 };
 
-exports.register.attributes = {
+module.exports.register.attributes = {
     pkg: require('./package.json')
 };
