@@ -18,37 +18,31 @@ var Mudskipper = function (options) {
             index: {
                 method: 'get',
                 config: {
-                    bind: {}
                 }
             },
             show: {
                 method: 'get',
                 config: {
-                    bind: {}
                 }
             },
             create: {
                 method: 'post',
                 config: {
-                    bind: {}
                 }
             },
             update: {
                 method: 'put',
                 config: {
-                    bind: {}
                 }
             },
             patch: {
                 method: 'patch',
                 config: {
-                    bind: {}
                 }
             },
             destroy: {
                 method: 'delete',
                 config: {
-                    bind: {}
                 }
             }
         }
