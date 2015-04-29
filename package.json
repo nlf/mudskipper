@@ -1,6 +1,6 @@
 {
   "name": "mudskipper",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "a resourceful routing plugin for hapi",
   "main": "index.js",
   "scripts": {
